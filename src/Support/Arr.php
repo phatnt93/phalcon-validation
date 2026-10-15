@@ -14,7 +14,7 @@ class Arr
     /**
      * Get an item from an array or ArrayAccess using "dot" notation.
      *
-     * @param array<string|int, mixed>|ArrayAccess $array
+     * @param array<string|int, mixed>|ArrayAccess<array-key, mixed> $array
      * @param string|int|null $key
      * @param mixed $default
      * @return mixed
@@ -50,7 +50,7 @@ class Arr
     /**
      * Check if an item or items exist in an array using "dot" notation.
      *
-     * @param array<string|int, mixed>|ArrayAccess $array
+     * @param array<string|int, mixed>|ArrayAccess<array-key, mixed> $array
      * @param string|int $key
      * @return bool
      */

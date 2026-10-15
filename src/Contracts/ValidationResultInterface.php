@@ -24,7 +24,7 @@ interface ValidationResultInterface
     /**
      * Get raw errors list.
      *
-     * @return array<int, array{field: string, rule: string, message: string, params: array}>
+     * @return list<array{field: string, rule: string, message: string, params: array<mixed>}>
      */
     public function getErrors(): array;
 

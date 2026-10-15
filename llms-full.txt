@@ -79,6 +79,23 @@ if ($isValid !== true) {
 }
 ```
 
+### Localization (i18n)
+- Shipped locales: `en` (default and fallback), `vi`. Constants: `Translator::DEFAULT_LOCALE`, `Translator::SUPPORTED_LOCALES`.
+- Locale codes are normalized (`EN` → `en`, `en-us` → `en_US`). Malformed codes throw `PhalconValidation\Exceptions\InvalidLocaleException`.
+- Lookup order: field-specific custom message → rule custom message → current locale → base language (`vi` for `vi_VN`) → `en` → generic message.
+- Placeholders: `{field}`, `{param}`, `{param:0}`, `{param:1}`.
+
+```php
+use PhalconValidation\Validator;
+
+$validator = new Validator('vi');          // or ->setLocale('vi_VN')
+$validator->setFieldNames(['email' => 'Địa chỉ email']);
+
+// Add or override messages for any locale without modifying the library
+$validator->addTranslations('fr', ['required' => 'Le champ {field} est obligatoire.']);
+$validator->setLocale('fr');
+```
+
 ---
 
 ## 3. File Upload Suite (Filters & Validators)

@@ -1,8 +1,8 @@
 # Phalcon Validation (Tài liệu Tiếng Việt)
 
-[📖 English Documentation](README.md)
+[English](README.md) | **Tiếng Việt**
 
-[![Latest Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/phatnt93/phalcon-validation)
+[![Latest Version](https://img.shields.io/github/v/tag/phatnt93/phalcon-validation?sort=semver&label=version)](https://github.com/phatnt93/phalcon-validation/tags)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-8892BF.svg)](https://php.net)
 [![Phalcon Support](https://img.shields.io/badge/phalcon-v5%20%7C%20v6-green.svg)](https://phalcon.io)
 [![Build Status](https://github.com/phatnt93/phalcon-validation/actions/workflows/tests.yml/badge.svg)](https://github.com/phatnt93/phalcon-validation/actions)
@@ -31,7 +31,8 @@ Thư viện PHP Data Validation & Sanitization hiệu năng cao, cú pháp ngắ
 11. [Bảng Tra Cứu 80+ Bộ Kiểm Tra Hợp Lệ (Validators)](#11-bảng-tra-cứu-80-bộ-kiểm-tra-hợp-lệ-validators)
 12. [Tự Viết Custom Validator và Custom Filter](#12-tự-viết-custom-validator-và-custom-filter)
 13. [Kiểm thử tự động](#13-kiểm-thử-tự-động)
-14. [Hướng dẫn xuất bản lên Packagist](#14-hướng-dẫn-xuất-bản-lên-packagist)
+14. [Sử dụng cùng AI Coding Agents](#14-sử-dụng-cùng-ai-coding-agents)
+15. [Hướng dẫn xuất bản lên Packagist](#15-hướng-dẫn-xuất-bản-lên-packagist)
 
 ---
 
@@ -353,14 +354,28 @@ $clean = PhalconValidation::run($data, $rules, $filters);
 
 ## 7. Tên Trường Thân Thiện và Đa Ngôn Ngữ
 
-### 7.1. Chọn ngôn ngữ hiển thị
-Thư viện tích hợp sẵn 2 gói ngôn ngữ chuẩn:
+### 7.1. Ngôn ngữ tích hợp sẵn
+Thư viện tích hợp sẵn 2 gói ngôn ngữ:
+- `en`: Tiếng Anh (mặc định và là ngôn ngữ dự phòng)
 - `vi`: Tiếng Việt
-- `en`: Tiếng Anh (mặc định)
 
 ```php
-$validator = new Validator('vi'); // Tiếng Việt
+$validator = new Validator();       // mặc định 'en'
+$validator = new Validator('vi');   // Tiếng Việt
+$validator->setLocale('vi_VN');     // mã có vùng sẽ dùng ngôn ngữ gốc ('vi')
 ```
+
+Mã locale không phân biệt hoa thường và chấp nhận `-` hoặc `_` (`EN`, `en-us`, `vi_VN`). Mã sai định dạng (ví dụ `../en`) sẽ ném `PhalconValidation\Exceptions\InvalidLocaleException`. Locale đúng định dạng nhưng chưa có từ điển sẽ dùng `en`; câu thông báo nào thiếu ở locale hiện tại cũng tự động lấy từ `en`.
+
+#### Thêm ngôn ngữ của riêng bạn
+```php
+$validator = new Validator('fr');
+$validator->addTranslations('fr', [
+    'required'    => 'Le champ {field} est obligatoire.',
+    'valid_email' => 'Le champ {field} doit être une adresse e-mail valide.',
+]);
+```
+Giữ nguyên các placeholder (`{field}`, `{param}`, `{param:0}`...) như bản Tiếng Anh.
 
 ### 7.2. Đặt Alias tên trường
 Thay vì thông báo lỗi hiển thị tên trường kỹ thuật (`items.1.price`), bạn có thể đặt tên thân thiện:
@@ -480,18 +495,18 @@ Mọi rule kiểm tra tệp tin đều tự động phân tích và tương thí
 
 ## 11. Bảng Tra Cứu 80+ Bộ Kiểm Tra Hợp Lệ (Validators)
 
-### 10.1. Nhóm Bắt buộc & Hiện diện
+### 11.1. Nhóm Bắt buộc & Hiện diện
 - **`required`**: Giá trị bắt buộc phải có mặt và không rỗng (khác `null`, `""`, `[]`).
 - **`required_file`**: Tệp tin bắt buộc phải tải lên không có mã lỗi (`UPLOAD_ERR_OK`). Tự động nhận diện linh hoạt file đơn, mảng native PHP `$_FILES`, danh sách mảng file đã chuẩn hóa và đối tượng Phalcon File.
 
-### 10.2. Nhóm Chuỗi & Độ dài
+### 11.2. Nhóm Chuỗi & Độ dài
 - **`min_len,n`**: Độ dài chuỗi tối thiểu `n` ký tự.
 - **`max_len,n`**: Độ dài chuỗi tối đa `n` ký tự.
 - **`exact_len,n`**: Độ dài chuỗi chính xác bằng `n` ký tự.
 - **`between_len,min;max`**: Độ dài chuỗi trong khoảng từ `min` đến `max`.
 - **`word_count,min,val1,max,val2`**: Số lượng từ trong chuỗi trong khoảng cho phép.
 
-### 10.3. Nhóm Ký tự & Quy ước đặt tên
+### 11.3. Nhóm Ký tự & Quy ước đặt tên
 - **`alpha`**: Chỉ chứa chữ cái (`a-z`, `A-Z`, ký tự chữ cái Unicode).
 - **`alpha_numeric`**: Chỉ chứa chữ cái và số.
 - **`alpha_dash`**: Chỉ chứa chữ cái, gạch ngang `-` và gạch dưới `_`.
@@ -502,7 +517,7 @@ Mọi rule kiểm tra tệp tin đều tự động phân tích và tương thí
 - **`snake_case`**: Chuỗi theo định dạng `snake_case`.
 - **`url_slug`**: Chuỗi theo định dạng URL slug.
 
-### 10.4. Nhóm Số học & Toán học
+### 11.4. Nhóm Số học & Toán học
 - **`numeric`**: Giá trị là số hợp lệ hoặc chuỗi số (`is_numeric`).
 - **`integer`**: Giá trị là số nguyên.
 - **`float`**: Giá trị là số thực.
@@ -514,11 +529,11 @@ Mọi rule kiểm tra tệp tin đều tự động phân tích và tương thí
 - **`prime`**: Số nguyên tố.
 - **`starts,prefix`**: Bắt đầu bằng tiền tố `prefix`.
 
-### 10.5. Nhóm So sánh & Regex
+### 11.5. Nhóm So sánh & Regex
 - **`equalsfield,target_field`**: Trùng khớp với giá trị của trường khác (xác nhận mật khẩu).
 - **`regex,pattern`**: Khớp biểu thức chính quy Regex (ví dụ: `regex,/^\d{4}$/`).
 
-### 10.6. Nhóm Mạng, Web & Internet
+### 11.6. Nhóm Mạng, Web & Internet
 - **`valid_email`**: Định dạng email hợp lệ.
 - **`valid_url`**: Địa chỉ URL hợp lệ (`http://` hoặc `https://`).
 - **`url_exists`**: URL sống và phản hồi HTTP 200/301/302.
@@ -531,7 +546,7 @@ Mọi rule kiểm tra tệp tin đều tự động phân tích và tương thí
 - **`social_handle`**: Handle mạng xã hội hợp lệ (ví dụ: `@username`).
 - **`valid_name`**: Họ tên người hợp lệ (Unicode, dấu cách, dấu gạch nối).
 
-### 10.7. Nhóm Ngày tháng & Thời gian
+### 11.7. Nhóm Ngày tháng & Thời gian
 - **`date,[format]`**: Ngày tháng hợp lệ (mặc định ISO hoặc format tùy chọn `Y-m-d`).
 - **`date_range,start;end`**: Ngày nằm trong khoảng từ `start` đến `end`.
 - **`future_date`**: Ngày trong tương lai.
@@ -540,20 +555,20 @@ Mọi rule kiểm tra tệp tin đều tự động phân tích và tương thí
 - **`valid_time`**: Định dạng giờ phút giây (`HH:MM:SS` hoặc `HH:MM`).
 - **`min_age,years`**: Tuổi tính từ ngày sinh >= số năm chỉ định.
 
-### 10.8. Nhóm Vị trí & Địa lý
+### 11.8. Nhóm Vị trí & Địa lý
 - **`latitude`**: Vĩ độ hợp lệ (-90 đến 90).
 - **`longitude`**: Kinh độ hợp lệ (-180 đến 180).
 - **`coordinates`**: Tọa độ hợp lệ theo định dạng `lat,lng`.
 - **`postal_code`**: Mã bưu chính hợp lệ.
 - **`street_address`**: Nhận diện cấu trúc địa chỉ đường phố.
 
-### 10.9. Nhóm Chuẩn ISO
+### 11.9. Nhóm Chuẩn ISO
 - **`country_code`**: Mã quốc gia ISO 3166-1 alpha-2 hoặc alpha-3.
 - **`currency_code`**: Mã tiền tệ ISO 4217 (USD, VND, EUR,...).
 - **`language_code`**: Mã ngôn ngữ ISO 639 (en, vi, fr,...).
 - **`timezone`**: Tên múi giờ hợp lệ (`Asia/Ho_Chi_Minh`, `UTC`,...).
 
-### 10.10. Nhóm Mã hóa, Bảo mật & Tài chính
+### 11.10. Nhóm Mã hóa, Bảo mật & Tài chính
 - **`valid_cc`**: Số thẻ tín dụng hợp lệ (thuật toán Luhn).
 - **`iban`**: Mã tài khoản ngân hàng quốc tế IBAN.
 - **`uuid`**: Chuỗi UUID hợp lệ.
@@ -566,11 +581,11 @@ Mọi rule kiểm tra tệp tin đều tự động phân tích và tương thí
 - **`no_xss`**: Phát hiện các mẫu tấn công XSS.
 - **`phone_number`**: Số điện thoại hợp lệ.
 
-### 10.11. Nhóm Màu sắc
+### 11.11. Nhóm Màu sắc
 - **`hex_color`**: Mã màu Hexadecimal (`#FFFFFF`, `#FFF`, FFFFFF).
 - **`rgb_color`**: Mã màu RGB/RGBA với các kênh giới hạn từ 0 đến 255.
 
-### 10.12. Nhóm Nội dung, Mảng & JSON
+### 11.12. Nhóm Nội dung, Mảng & JSON
 - **`contains,v1;v2`**: Thuộc danh sách cho phép (hiển thị danh sách trong lỗi).
 - **`contains_list,v1;v2`**: Thuộc danh sách cho phép (ẩn danh sách trong lỗi).
 - **`doesnt_contain_list,v1;v2`**: Không thuộc danh sách cấm.
@@ -579,7 +594,7 @@ Mọi rule kiểm tra tệp tin đều tự động phân tích và tương thí
 - **`valid_array_size_greater,n`**: Mảng có ít nhất `n` phần tử.
 - **`valid_array_size_lesser,n`**: Mảng có tối đa `n` phần tử.
 
-### 10.13. Nhóm Tệp tin Tải lên
+### 11.13. Nhóm Tệp tin Tải lên
 - **`extension,ext1;ext2`**: Phần mở rộng tệp tin hợp lệ (`pdf;docx;png`). Tự động nhận diện linh hoạt chuỗi tên file, file đơn, mảng native PHP `$_FILES`, danh sách mảng file đã chuẩn hóa và đối tượng Phalcon File.
 - **`mimetype,type1;type2`**: Định dạng MIME type hợp lệ (`image/png;image/jpeg;application/pdf`). Kiểm tra cấu trúc nhị phân thực tế qua `finfo` khi tệp tồn tại trên đĩa, tự động fallback về header metadata (alias: `mime_type`).
 - **`max_file_size,limit`**: Dung lượng tệp tin tối đa cho phép (hỗ trợ các đơn vị `2mb`, `500kb`, `1048576`).
@@ -617,13 +632,17 @@ $filters = ['code' => 'prefix,ORDER_'];
 
 ---
 
-## 12. Kiểm Thử Tự Động
+## 13. Kiểm Thử Tự Động
 
-Thư viện được kiểm thử tự động với bộ test suite PHPUnit gồm 54 bài kiểm thử và 152 assertions:
+Thư viện được kiểm thử tự động bằng bộ test suite PHPUnit (unit + integration). Các test integration tự động bỏ qua khi chưa nạp `ext-phalcon`.
 
 ```bash
 # Chạy toàn bộ test suite
 composer test
+
+# Phân tích tĩnh và kiểm tra định dạng code
+composer analyse
+composer cs:check
 
 # Hoặc qua PHPUnit CLI trực tiếp
 php vendor/bin/phpunit
@@ -631,7 +650,19 @@ php vendor/bin/phpunit
 
 ---
 
-## 13. Hướng Dẫn Xuất Bản Lên Packagist
+## 14. Sử Dụng Cùng AI Coding Agents
+
+Package có sẵn `llms.txt` và `llms-full.txt` dành cho trợ lý AI. Thêm đoạn sau vào `AGENTS.md` (hoặc rules của Cursor/Copilot) trong dự án của bạn:
+
+```markdown
+- Use `phatnt93/phalcon-validation` for request/form validation and sanitization.
+- API summary: vendor/phatnt93/phalcon-validation/llms.txt
+- Full rule and filter reference: vendor/phatnt93/phalcon-validation/llms-full.txt
+```
+
+---
+
+## 15. Hướng Dẫn Xuất Bản Lên Packagist
 
 Để phân phối thư viện này cho cộng đồng cài đặt qua Composer:
 1. Đẩy mã nguồn lên GitHub: `https://github.com/phatnt93/phalcon-validation`.

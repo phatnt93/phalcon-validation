@@ -29,7 +29,7 @@ class Validator
     private ValidationEngine $engine;
     private RuleRegistryInterface $ruleRegistry;
     private FilterRegistryInterface $filterRegistry;
-    private TranslatorInterface $translator;
+    private Translator $translator;
 
     /**
      * Rules defined on the instance.
@@ -54,7 +54,7 @@ class Validator
      */
     private array $lastData = [];
 
-    public function __construct(string $lang = 'en')
+    public function __construct(string $lang = Translator::DEFAULT_LOCALE)
     {
         $this->ruleRegistry = self::getGlobalRuleRegistry();
         $this->filterRegistry = self::getGlobalFilterRegistry();
@@ -244,6 +244,20 @@ class Validator
         return $this;
     }
 
+    /**
+     * Add or override translations for a locale (e.g. 'fr') without modifying the library.
+     *
+     * @param array<string, string> $messages [rule => template]
+     */
+    public function addTranslations(string $locale, array $messages): self
+    {
+        $this->translator->addTranslations($locale, $messages);
+        return $this;
+    }
+
+    /**
+     * @param array<string, string> $names [field => Readable Label]
+     */
     public function setFieldNames(array $names): self
     {
         $this->translator->setFieldNames($names);
@@ -298,6 +312,9 @@ class Validator
         self::getGlobalTranslator()->setFieldName($field, $readable_name);
     }
 
+    /**
+     * @param array<string, string> $array [field => Readable Label]
+     */
     public static function set_field_names(array $array): void
     {
         self::getGlobalTranslator()->setFieldNames($array);
@@ -308,6 +325,9 @@ class Validator
         self::getGlobalTranslator()->setCustomMessages([$rule => $message]);
     }
 
+    /**
+     * @param array<string, string|array<string, string>> $array
+     */
     public static function set_error_messages(array $array): void
     {
         self::getGlobalTranslator()->setCustomMessages($array);
@@ -356,7 +376,7 @@ class Validator
     public static function getGlobalTranslator(): TranslatorInterface
     {
         if (self::$globalTranslator === null) {
-            self::$globalTranslator = new Translator('en');
+            self::$globalTranslator = new Translator(Translator::DEFAULT_LOCALE);
         }
         return self::$globalTranslator;
     }

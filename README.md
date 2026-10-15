@@ -1,8 +1,8 @@
 # Phalcon Validation
 
-[📖 Bản Tiếng Việt (Vietnamese Documentation)](README.vn.md)
+**English** | [Tiếng Việt](README.vi.md)
 
-[![Latest Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/phatnt93/phalcon-validation)
+[![Latest Version](https://img.shields.io/github/v/tag/phatnt93/phalcon-validation?sort=semver&label=version)](https://github.com/phatnt93/phalcon-validation/tags)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-8892BF.svg)](https://php.net)
 [![Phalcon Support](https://img.shields.io/badge/phalcon-v5%20%7C%20v6-green.svg)](https://phalcon.io)
 [![Build Status](https://github.com/phatnt93/phalcon-validation/actions/workflows/tests.yml/badge.svg)](https://github.com/phatnt93/phalcon-validation/actions)
@@ -31,7 +31,8 @@ A fast, flexible, expressive, and human-friendly PHP Data Validation and Sanitiz
 11. [80+ Built-in Validators](#11-80-built-in-validators)
 12. [Custom Validators and Custom Filters](#12-custom-validators-and-custom-filters)
 13. [Automated Testing](#13-automated-testing)
-14. [Publishing to Packagist](#14-publishing-to-packagist)
+14. [Using with AI Coding Agents](#14-using-with-ai-coding-agents)
+15. [Publishing to Packagist](#15-publishing-to-packagist)
 
 ---
 
@@ -354,12 +355,26 @@ $clean = PhalconValidation::run($data, $rules, $filters);
 
 ### 7.1. Built-in Languages
 The library includes complete language dictionaries for:
-- `en`: English (Default)
+- `en`: English (default and fallback)
 - `vi`: Vietnamese
 
 ```php
-$validator = new Validator('en'); // or 'vi'
+$validator = new Validator();       // 'en' by default
+$validator = new Validator('vi');   // Vietnamese
+$validator->setLocale('vi_VN');     // regional codes fall back to the base language ('vi')
 ```
+
+Locale codes are case-insensitive and accept `-` or `_` (`EN`, `en-us`, `vi_VN`). Malformed codes (for example `../en`) throw `PhalconValidation\Exceptions\InvalidLocaleException`. A well-formed locale without a dictionary falls back to `en`, and any message missing from the current locale also falls back to `en`.
+
+#### Adding your own language
+```php
+$validator = new Validator('fr');
+$validator->addTranslations('fr', [
+    'required'    => 'Le champ {field} est obligatoire.',
+    'valid_email' => 'Le champ {field} doit être une adresse e-mail valide.',
+]);
+```
+Keep the placeholders (`{field}`, `{param}`, `{param:0}`...) identical to the English template.
 
 ### 7.2. Setting Field Aliases
 Replace technical keys (`items.1.price`) with natural labels:
@@ -479,18 +494,18 @@ Every file validator automatically detects and validates:
 
 ## 11. 80+ Built-in Validators
 
-### 10.1. Presence
+### 11.1. Presence
 - **`required`**: Field must be present and not empty (not `null`, `""`, `[]`).
 - **`required_file`**: File must be uploaded without errors (`UPLOAD_ERR_OK`). Intelligently adapts to single files, native PHP `$_FILES` multiple arrays, normalized file lists, and Phalcon File objects.
 
-### 10.2. Strings & Length
+### 11.2. Strings & Length
 - **`min_len,n`**: Minimum string length.
 - **`max_len,n`**: Maximum string length.
 - **`exact_len,n`**: Exact string length.
 - **`between_len,min;max`**: String length within inclusive range.
 - **`word_count,min,v1,max,v2`**: Word count within specified range.
 
-### 10.3. Characters & Naming Conventions
+### 11.3. Characters & Naming Conventions
 - **`alpha`**: Alphabetic characters only.
 - **`alpha_numeric`**: Alphanumeric characters only.
 - **`alpha_dash`**: Letters, hyphens `-`, and underscores `_`.
@@ -501,7 +516,7 @@ Every file validator automatically detects and validates:
 - **`snake_case`**: Validates `snake_case` format.
 - **`url_slug`**: Validates URL slug format.
 
-### 10.4. Numeric & Mathematics
+### 11.4. Numeric & Mathematics
 - **`numeric`**: Valid number or numeric string.
 - **`integer`**: Valid integer.
 - **`float`**: Valid float number.
@@ -513,11 +528,11 @@ Every file validator automatically detects and validates:
 - **`prime`**: Number must be prime.
 - **`starts,prefix`**: Starts with specified prefix.
 
-### 10.5. Field Comparison & Regex
+### 11.5. Field Comparison & Regex
 - **`equalsfield,target_field`**: Equals another field's value (e.g. password confirmation).
 - **`regex,pattern`**: Matches regular expression pattern.
 
-### 10.6. Network & Web
+### 11.6. Network & Web
 - **`valid_email`**: Valid email address format.
 - **`valid_url`**: Valid URL format.
 - **`url_exists`**: Accessible web URL responding with 200/301/302.
@@ -530,7 +545,7 @@ Every file validator automatically detects and validates:
 - **`social_handle`**: Social media username handle (`@username`).
 - **`valid_name`**: Human name format.
 
-### 10.7. Date & Time
+### 11.7. Date & Time
 - **`date,[format]`**: Valid date (ISO 8601 or custom format e.g. `Y-m-d`).
 - **`date_range,start;end`**: Date between start and end.
 - **`future_date`**: Date in the future.
@@ -539,20 +554,20 @@ Every file validator automatically detects and validates:
 - **`valid_time`**: Time format (`HH:MM:SS` or `HH:MM`).
 - **`min_age,years`**: Age from birthdate >= minimum years.
 
-### 10.8. Locations & Geo
+### 11.8. Locations & Geo
 - **`latitude`**: Latitude coordinate (-90 to 90).
 - **`longitude`**: Longitude coordinate (-180 to 180).
 - **`coordinates`**: Coordinates in `lat,lng` format.
 - **`postal_code`**: Postal code format.
 - **`street_address`**: Street address structure.
 
-### 10.9. ISO Standards
+### 11.9. ISO Standards
 - **`country_code`**: ISO 3166-1 alpha-2 or alpha-3 country code.
 - **`currency_code`**: ISO 4217 currency code (USD, EUR, VND,...).
 - **`language_code`**: ISO 639 language code (en, vi, fr,...).
 - **`timezone`**: Valid timezone identifier (`Asia/Ho_Chi_Minh`, `UTC`,...).
 
-### 10.10. Security & Finance
+### 11.10. Security & Finance
 - **`valid_cc`**: Credit card number (Luhn algorithm).
 - **`iban`**: International Bank Account Number.
 - **`uuid`**: UUID string format.
@@ -565,11 +580,11 @@ Every file validator automatically detects and validates:
 - **`no_xss`**: Detects XSS script injection vectors.
 - **`phone_number`**: Phone number format.
 
-### 10.11. Color
+### 11.11. Color
 - **`hex_color`**: Hex color code (`#FFFFFF`, `#FFF`, FFFFFF).
 - **`rgb_color`**: RGB / RGBA color with channels bounded between 0 and 255.
 
-### 10.12. Content, Arrays & JSON
+### 11.12. Content, Arrays & JSON
 - **`contains,v1;v2`**: Value is in allowed list (displays allowed list in error).
 - **`contains_list,v1;v2`**: Value is in allowed list (hides allowed list in error).
 - **`doesnt_contain_list,v1;v2`**: Value is not in disallowed list.
@@ -578,7 +593,7 @@ Every file validator automatically detects and validates:
 - **`valid_array_size_greater,n`**: Array has at least `n` elements.
 - **`valid_array_size_lesser,n`**: Array has at most `n` elements.
 
-### 10.13. File Uploads
+### 11.13. File Uploads
 - **`extension,ext1;ext2`**: Allowed file extensions (`pdf;docx;png`). Intelligently validates single files, native PHP `$_FILES` multiple arrays, normalized file lists, filename strings, and Phalcon File objects.
 - **`mimetype,type1;type2`**: Allowed MIME types (`image/png;image/jpeg;application/pdf`). Inspects real binary content via `finfo` when file exists on disk, with graceful fallback to header metadata (alias: `mime_type`).
 - **`max_file_size,limit`**: Maximum allowed file size (supports units like `2mb`, `500kb`, `1048576`).
@@ -618,11 +633,15 @@ $filters = ['code' => 'prefix,ORDER_'];
 
 ## 13. Automated Testing
 
-The library is thoroughly covered by an automated PHPUnit test suite comprising 54 tests and 152 assertions:
+The library is covered by an automated PHPUnit test suite (unit + integration). Integration tests are skipped automatically when `ext-phalcon` is not loaded.
 
 ```bash
 # Run test suite
 composer test
+
+# Static analysis and code style
+composer analyse
+composer cs:check
 
 # Or directly through PHPUnit CLI
 php vendor/bin/phpunit
@@ -630,7 +649,19 @@ php vendor/bin/phpunit
 
 ---
 
-## 14. Publishing to Packagist
+## 14. Using with AI Coding Agents
+
+This package ships `llms.txt` and `llms-full.txt` for AI assistants. Add this snippet to your project's `AGENTS.md` (or Cursor/Copilot rules):
+
+```markdown
+- Use `phatnt93/phalcon-validation` for request/form validation and sanitization.
+- API summary: vendor/phatnt93/phalcon-validation/llms.txt
+- Full rule and filter reference: vendor/phatnt93/phalcon-validation/llms-full.txt
+```
+
+---
+
+## 15. Publishing to Packagist
 
 To distribute this library for composer installation:
 1. Push this repository to GitHub: `https://github.com/phatnt93/phalcon-validation`.

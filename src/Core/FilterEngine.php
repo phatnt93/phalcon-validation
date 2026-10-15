@@ -50,6 +50,7 @@ class FilterEngine
             }
         }
 
+        /** @var array<string, mixed> $data */
         return $data;
     }
 

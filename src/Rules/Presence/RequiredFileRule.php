@@ -87,7 +87,7 @@ class RequiredFileRule extends AbstractRule
         }
 
         // 4. PHP Native $_FILES single upload structure (or single file associative array)
-        if (isset($value['error']) && !is_array($value['error'])) {
+        if (isset($value['error'])) {
             if ((int) $value['error'] !== UPLOAD_ERR_OK) {
                 return false;
             }

@@ -114,6 +114,9 @@ class NormalizeFilesFilter extends AbstractFilter
         return $value;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function normalizePhalconFile(object $file): array
     {
         return [

@@ -110,7 +110,7 @@ class ExtensionRule extends AbstractRule
         }
 
         // 5. PHP Native $_FILES single upload structure (or single file associative array)
-        if (isset($value['name']) && !is_array($value['name'])) {
+        if (isset($value['name'])) {
             return $isValidExt((string) $value['name']);
         }
 

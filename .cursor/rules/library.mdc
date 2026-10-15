@@ -1,0 +1,6 @@
+---
+description: Conventions for contributing to phatnt93/phalcon-validation
+alwaysApply: true
+---
+
+Follow the instructions in @AGENTS.md at the repository root (commands, coding rules, i18n rules).

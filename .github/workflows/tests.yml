@@ -7,21 +7,53 @@ on:
     branches: [ main ]
 
 jobs:
+  quality:
+    name: Quality (validate, code style, static analysis, coverage)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, fileinfo, psr, phalcon
+          coverage: pcov
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Check code style
+        run: composer cs:check
+
+      - name: Static analysis
+        run: composer analyse
+
+      - name: Run PHPUnit with coverage
+        run: vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml
+
   phpunit:
+    name: PHP ${{ matrix.php-version }} (${{ matrix.dependencies }} deps)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         php-version: ['8.1', '8.2', '8.3', '8.4']
+        dependencies: ['lowest', 'highest']
         include:
           - php-version: '8.1'
-            extensions: 'mbstring, intl, fileinfo, json, psr, phalcon'
+            extensions: 'mbstring, intl, fileinfo, psr, phalcon'
           - php-version: '8.2'
-            extensions: 'mbstring, intl, fileinfo, json, psr, phalcon'
+            extensions: 'mbstring, intl, fileinfo, psr, phalcon'
           - php-version: '8.3'
-            extensions: 'mbstring, intl, fileinfo, json, psr, phalcon'
+            extensions: 'mbstring, intl, fileinfo, psr, phalcon'
+          # ext-phalcon has no PHP 8.4 build yet; integration tests are skipped via #[RequiresPhpExtension]
           - php-version: '8.4'
-            extensions: 'mbstring, intl, fileinfo, json'
+            extensions: 'mbstring, intl, fileinfo'
 
     steps:
       - name: Checkout code
@@ -34,8 +66,10 @@ jobs:
           extensions: ${{ matrix.extensions }}
           coverage: none
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+      - name: Install dependencies (${{ matrix.dependencies }})
+        uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: ${{ matrix.dependencies }}
 
       - name: Run PHPUnit
         run: vendor/bin/phpunit

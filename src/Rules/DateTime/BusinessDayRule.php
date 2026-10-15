@@ -22,6 +22,6 @@ class BusinessDayRule extends AbstractRule
         }
 
         $dayOfWeek = (int) date('N', $timestamp);
-        return $dayOfWeek >= 1 && $dayOfWeek <= 5;
+        return $dayOfWeek <= 5;
     }
 }

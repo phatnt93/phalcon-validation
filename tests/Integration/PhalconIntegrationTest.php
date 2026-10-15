@@ -14,17 +14,11 @@ use PhalconValidation\Rules\Phalcon\ExistsModelRule;
 use PhalconValidation\Rules\Phalcon\UniqueModelRule;
 use PhalconValidation\Tests\TestCase;
 use PhalconValidation\Validator;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 
+#[RequiresPhpExtension('phalcon')]
 class PhalconIntegrationTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        if (!extension_loaded('phalcon')) {
-            $this->markTestSkipped('Phalcon extension is not loaded in this environment.');
-        }
-    }
-
     public function testValidationServiceProviderRegistersInPhalconDi(): void
     {
         $di = new FactoryDefault();
@@ -112,19 +106,6 @@ class PhalconIntegrationTest extends TestCase
 
     public function testPhalconOrmModelRulesWithMock(): void
     {
-        // Define a mock model class
-        if (!class_exists('PhalconValidation\Tests\Integration\MockUser')) {
-            eval('
-                namespace PhalconValidation\Tests\Integration;
-                class MockUser {
-                    public static int $mockCount = 0;
-                    public static function count(array $params = []): int {
-                        return self::$mockCount;
-                    }
-                }
-            ');
-        }
-
         $uniqueRule = new UniqueModelRule();
         $existsRule = new ExistsModelRule();
 

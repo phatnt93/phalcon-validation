@@ -32,19 +32,22 @@
         "psr-4"
     ],
     "homepage": "https://github.com/phatnt93/phalcon-validation",
+    "readme": "README.md",
     "support": {
         "issues": "https://github.com/phatnt93/phalcon-validation/issues",
         "source": "https://github.com/phatnt93/phalcon-validation",
         "docs": "https://github.com/phatnt93/phalcon-validation#readme"
     },
     "require": {
-        "php": "^8.1 || ^8.2 || ^8.3 || ^8.4"
+        "php": "^8.1"
     },
     "suggest": {
         "ext-phalcon": "Required to use Phalcon native C validators, filters and DI service provider (^5.0 || ^6.0)"
     },
     "require-dev": {
-        "phpunit/phpunit": "^10.0 || ^11.0"
+        "friendsofphp/php-cs-fixer": "^3.75",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^10.5 || ^11.0"
     },
     "autoload": {
         "psr-4": {
@@ -57,18 +60,19 @@
         }
     },
     "scripts": {
-        "test": "phpunit"
+        "test": "phpunit",
+        "analyse": "phpstan analyse --memory-limit=512M",
+        "cs:check": "php-cs-fixer fix --dry-run --diff",
+        "cs:fix": "php-cs-fixer fix"
     },
     "minimum-stability": "stable",
     "prefer-stable": true,
-    "config": {
-        "sort-packages": true,
-        "optimize-autoloader": true
-    },
-    "readme": "README.md",
     "extra": {
         "branch-alias": {
-            "dev-main": "1.1.x-dev"
+            "dev-main": "1.2.x-dev"
         }
+    },
+    "config": {
+        "sort-packages": true
     }
 }

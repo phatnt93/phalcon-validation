@@ -16,13 +16,13 @@ class ValidCcRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        $number = preg_replace('/\D/', '', (string) $value);
-        if (strlen((string) $number) < 13 || strlen((string) $number) > 19) {
+        $number = (string) preg_replace('/\D/', '', (string) $value);
+        $numDigits = strlen($number);
+        if ($numDigits < 13 || $numDigits > 19) {
             return false;
         }
 
         $sum = 0;
-        $numDigits = strlen((string) $number);
         $parity = $numDigits % 2;
 
         for ($i = 0; $i < $numDigits; $i++) {

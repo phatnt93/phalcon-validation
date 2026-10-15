@@ -63,7 +63,7 @@ class RuleParser
             if (is_string($key) && is_array($rule)) {
                 $parsed[] = [
                     'name' => $key,
-                    'params' => array_map('strval', $rule),
+                    'params' => array_values(array_map('strval', $rule)),
                     'custom' => null,
                     'raw' => $key . ',' . implode(',', $rule),
                 ];
@@ -235,7 +235,7 @@ class RuleParser
                     continue;
                 }
 
-                if ($char === $regexDelimiter && ($i === 0 || $rules[$i - 1] !== '\\')) {
+                if ($char === $regexDelimiter && $rules[$i - 1] !== '\\') {
                     // end of regex pattern, read modifiers until pipe or end
                     $current .= $char;
                     $inRegex = false;

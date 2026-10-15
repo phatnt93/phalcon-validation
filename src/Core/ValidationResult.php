@@ -34,6 +34,9 @@ class ValidationResult implements ValidationResultInterface, ArrayAccess
         return $this->data;
     }
 
+    /**
+     * @return list<array{field: string, rule: string, message: string, params: array<mixed>}>
+     */
     public function getErrors(): array
     {
         return $this->messageBag->all();
@@ -72,6 +75,8 @@ class ValidationResult implements ValidationResultInterface, ArrayAccess
     public function offsetSet(mixed $offset, mixed $value): void
     {
         if ($offset === null) {
+            // Appending yields an integer key, which is valid ArrayAccess behaviour.
+            // @phpstan-ignore assign.propertyType
             $this->data[] = $value;
         } else {
             $this->data[$offset] = $value;

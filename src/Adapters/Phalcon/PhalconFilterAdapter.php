@@ -26,8 +26,11 @@ class PhalconFilterAdapter
         }
 
         if (self::$instance === null) {
-            $factory = new FilterFactory();
-            self::$instance = $factory->newInstance();
+            $filter = (new FilterFactory())->newInstance();
+            if (!$filter instanceof NativePhalconFilter) {
+                return null;
+            }
+            self::$instance = $filter;
         }
 
         return self::$instance;
