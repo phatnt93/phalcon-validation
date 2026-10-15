@@ -595,14 +595,14 @@ Every file validator automatically detects and validates:
 
 ### 11.7. Date & Time
 - **`date,[format]`**: Valid calendar date. Without a format only ISO 8601 values are accepted (`Y-m-d`, `Y-m-d H:i[:s]`, `Y-m-d\TH:i[:s]`, optional `+07:00`/`Z` offset); relative strings such as `now` or `tomorrow` are rejected. With a format (e.g. `date,d/m/Y`) the value must match it exactly.
-- **`date_range,start;end`**: Date between start and end.
-- **`future_date`**: Date in the future.
-- **`past_date`**: Date in the past.
-- **`business_day`**: Date is a weekday (Monday to Friday).
+- **`date_range,start;end;[format]`**: Date between start and end (inclusive). The value and both bounds use the format, e.g. `date_range,01/01/2024;31/12/2024;d/m/Y`.
+- **`future_date,[format]`**: Date in the future.
+- **`past_date,[format]`**: Date in the past.
+- **`business_day,[format]`**: Date is a weekday (Monday to Friday).
 - **`valid_time`**: Time format (`HH:MM:SS` or `HH:MM`).
-- **`min_age,years`**: Age from birthdate >= minimum years.
+- **`min_age,years,[format]`**: Age from birthdate >= minimum years (e.g. `min_age,18,d/m/Y`). Birth dates in the future fail.
 
-> **Note:** `date_range`, `future_date`, `past_date`, `business_day` and `min_age` parse values with PHP `strtotime()`, so they also accept relative or free-form strings (`tomorrow`, `next monday`, `15 March 1990`; even `a` is read as "now"). Add `date` before them (e.g. `date|past_date`) when only ISO 8601 dates should be accepted. Stricter parsing with an optional format parameter is planned for a later minor release.
+> **Note:** like `date`, these rules accept only ISO 8601 values when no format is given, and the exact format otherwise. Relative or free-form strings (`tomorrow`, `next monday`, `15 March 1990`) and overflowing dates (`2024-02-30`) are rejected. A date without a time means midnight, so `past_date` accepts today's date.
 
 ### 11.8. Locations & Geo
 - **`latitude`**: Latitude coordinate (-90 to 90).

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace PhalconValidation\Rules\DateTime;
 
+use DateTimeImmutable;
 use PhalconValidation\Rules\AbstractRule;
+use PhalconValidation\Support\DateParser;
 
 /**
  * Validates that date is in the past.
+ * Syntax: past_date,[format] (ISO 8601 when no format is given; a date without time means midnight)
  */
 class PastDateRule extends AbstractRule
 {
@@ -16,15 +19,8 @@ class PastDateRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        if (!$this->isStringable($value)) {
-            return false;
-        }
+        $date = DateParser::parse($value, $params[0] ?? null);
 
-        $timestamp = strtotime((string) $value);
-        if ($timestamp === false) {
-            return false;
-        }
-
-        return $timestamp < time();
+        return $date !== null && $date < new DateTimeImmutable();
     }
 }

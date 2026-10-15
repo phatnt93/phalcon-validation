@@ -206,13 +206,13 @@ Every file validator accepts:
 
 ### 5.7. Date & Time
 - `date,[format]`: Valid calendar date. Default accepts ISO 8601 only (`Y-m-d`, `Y-m-d H:i[:s]`, `Y-m-d\TH:i[:s]` with optional `+07:00`/`Z`); relative strings like `now` are rejected. With a format the value must match it exactly.
-- `date_range,start;end`: Date falls within inclusive range.
-- `past_date`: Date strictly in the past.
-- `future_date`: Date strictly in the future.
-- `business_day`: Date falls on Monday-Friday.
+- `date_range,start;end;[format]`: Date falls within inclusive range; value and bounds use the format (ISO 8601 by default).
+- `past_date,[format]`: Date strictly in the past.
+- `future_date,[format]`: Date strictly in the future.
+- `business_day,[format]`: Date falls on Monday-Friday.
 - `valid_time`: Valid 24h or 12h time string.
-- `min_age,years`: Minimum age in years calculated from date of birth.
-- Note: `date_range`, `past_date`, `future_date`, `business_day` and `min_age` use `strtotime()` and accept relative strings (`tomorrow`, even `a` = now). Combine with `date` (e.g. `date|past_date`) to require ISO 8601.
+- `min_age,years,[format]`: Minimum age in years calculated from date of birth; future birth dates fail.
+- Note: all date rules parse strictly (ISO 8601 by default, otherwise the exact format). Relative strings (`tomorrow`, `next monday`) and overflowing dates are rejected. A date without time means midnight.
 
 ### 5.8. Geo & ISO
 - `latitude`: Valid latitude between -90 and 90.

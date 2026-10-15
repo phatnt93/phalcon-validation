@@ -595,14 +595,14 @@ Mọi rule kiểm tra tệp tin đều tự động phân tích và tương thí
 
 ### 11.7. Nhóm Ngày tháng & Thời gian
 - **`date,[format]`**: Ngày tháng hợp lệ theo lịch. Khi không truyền format chỉ chấp nhận dạng ISO 8601 (`Y-m-d`, `Y-m-d H:i[:s]`, `Y-m-d\TH:i[:s]`, có thể kèm offset `+07:00`/`Z`); chuỗi tương đối như `now`, `tomorrow` bị từ chối. Khi có format (ví dụ `date,d/m/Y`) giá trị phải khớp chính xác.
-- **`date_range,start;end`**: Ngày nằm trong khoảng từ `start` đến `end`.
-- **`future_date`**: Ngày trong tương lai.
-- **`past_date`**: Ngày trong quá khứ.
-- **`business_day`**: Ngày làm việc trong tuần (Thứ Hai đến Thứ Sáu).
+- **`date_range,start;end;[format]`**: Ngày nằm trong khoảng từ `start` đến `end` (gồm cả hai đầu). Giá trị và hai mốc dùng chung format, ví dụ `date_range,01/01/2024;31/12/2024;d/m/Y`.
+- **`future_date,[format]`**: Ngày trong tương lai.
+- **`past_date,[format]`**: Ngày trong quá khứ.
+- **`business_day,[format]`**: Ngày làm việc trong tuần (Thứ Hai đến Thứ Sáu).
 - **`valid_time`**: Định dạng giờ phút giây (`HH:MM:SS` hoặc `HH:MM`).
-- **`min_age,years`**: Tuổi tính từ ngày sinh >= số năm chỉ định.
+- **`min_age,years,[format]`**: Tuổi tính từ ngày sinh >= số năm chỉ định (ví dụ `min_age,18,d/m/Y`). Ngày sinh ở tương lai bị từ chối.
 
-> **Lưu ý:** `date_range`, `future_date`, `past_date`, `business_day` và `min_age` đọc giá trị bằng `strtotime()` của PHP, nên chấp nhận cả chuỗi tương đối hoặc tự do (`tomorrow`, `next monday`, `15 March 1990`; thậm chí `a` cũng được hiểu là "bây giờ"). Đặt `date` phía trước (ví dụ `date|past_date`) nếu chỉ muốn nhận ngày ISO 8601. Việc siết cách đọc ngày và thêm tham số format tùy chọn được lên kế hoạch cho một bản minor sau.
+> **Lưu ý:** giống `date`, các rule này chỉ nhận ISO 8601 khi không truyền format, và phải khớp chính xác format khi có truyền. Chuỗi tương đối hoặc tự do (`tomorrow`, `next monday`, `15 March 1990`) và ngày tràn (`2024-02-30`) bị từ chối. Ngày không kèm giờ được hiểu là 0 giờ, nên `past_date` chấp nhận ngày hôm nay.
 
 ### 11.8. Nhóm Vị trí & Địa lý
 - **`latitude`**: Vĩ độ hợp lệ (-90 đến 90).

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace PhalconValidation\Rules\DateTime;
 
-use DateTime;
+use DateTimeImmutable;
 use PhalconValidation\Rules\AbstractRule;
+use PhalconValidation\Support\DateParser;
 
 /**
  * Validates that birth date meets minimum age requirement in years.
+ * Syntax: min_age,years,[format] (ISO 8601 when no format is given). Birth dates in the future fail.
  */
 class MinAgeRule extends AbstractRule
 {
@@ -17,24 +19,13 @@ class MinAgeRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        if (!$this->isStringable($value)) {
+        $birthDate = DateParser::parse($value, $params[1] ?? null);
+        $now = new DateTimeImmutable();
+
+        if ($birthDate === null || $birthDate > $now) {
             return false;
         }
 
-        $minAge = (int) ($params[0] ?? 0);
-        $birthDate = DateTime::createFromFormat('Y-m-d', (string) $value);
-
-        if (!$birthDate) {
-            $timestamp = strtotime((string) $value);
-            if ($timestamp === false) {
-                return false;
-            }
-            $birthDate = (new DateTime())->setTimestamp($timestamp);
-        }
-
-        $now = new DateTime();
-        $age = $now->diff($birthDate)->y;
-
-        return $age >= $minAge;
+        return $now->diff($birthDate)->y >= (int) ($params[0] ?? 0);
     }
 }

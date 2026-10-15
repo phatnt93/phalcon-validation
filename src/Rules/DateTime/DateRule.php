@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PhalconValidation\Rules\DateTime;
 
-use DateTime;
 use PhalconValidation\Rules\AbstractRule;
+use PhalconValidation\Support\DateParser;
 
 /**
  * Validates that value is a valid calendar date.
@@ -19,45 +19,13 @@ class DateRule extends AbstractRule
     /**
      * Formats accepted when no explicit format is given.
      */
-    public const DEFAULT_FORMATS = [
-        'Y-m-d',
-        'Y-m-d H:i',
-        'Y-m-d H:i:s',
-        'Y-m-d\TH:i',
-        'Y-m-d\TH:i:s',
-        'Y-m-d\TH:i:sP',
-        'Y-m-d\TH:i:sp',
-    ];
+    public const DEFAULT_FORMATS = DateParser::DEFAULT_FORMATS;
 
     protected string $name = 'date';
     protected string $defaultMessage = 'The {field} field must be a valid date.';
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        if (!is_string($value) && !is_numeric($value)) {
-            return false;
-        }
-
-        $value = (string) $value;
-        $format = $params[0] ?? null;
-        $formats = $format !== null && $format !== '' ? [$format] : self::DEFAULT_FORMATS;
-
-        foreach ($formats as $candidate) {
-            if (self::matchesFormat($value, $candidate)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Strict check: the value must parse with the format and format back to the identical string,
-     * which rejects overflowing dates such as 2024-02-30.
-     */
-    private static function matchesFormat(string $value, string $format): bool
-    {
-        $date = DateTime::createFromFormat('!' . $format, $value);
-        return $date !== false && $date->format($format) === $value;
+        return DateParser::parse($value, $params[0] ?? null) !== null;
     }
 }

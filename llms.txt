@@ -170,7 +170,7 @@ $validator->setLocale('fr');
 - **Comparison:** `equalsfield,otherField`
 - **Regex:** `regex,/pattern/`
 - **Network:** `valid_email`, `valid_url`, `url_exists,[allow_private]`, `valid_ip`, `valid_ipv4`, `valid_ipv6`, `mac_address`, `domain_name`, `port_number`, `social_handle`, `valid_name`
-- **DateTime:** `date,[format]`, `date_range,start;end`, `past_date`, `future_date`, `business_day`, `valid_time`, `min_age,n`
+- **DateTime:** `date,[format]`, `date_range,start;end;[format]`, `past_date,[format]`, `future_date,[format]`, `business_day,[format]`, `valid_time`, `min_age,n,[format]`
 - **Geo:** `latitude`, `longitude`, `coordinates`, `street_address`
 - **ISO:** `country_code`, `currency_code`, `language_code`, `timezone`
 - **Security:** `valid_cc`, `iban`, `uuid`, `guidv4`, `jwt_token`, `hash,algorithm`, `base64`, `strong_password`, `nosqlinjection`, `noxss`, `phone_number`

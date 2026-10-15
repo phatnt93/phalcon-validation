@@ -20,7 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI quality job (composer validate, code style, static analysis, coverage) and a `lowest`/`highest` dependency matrix.
 - CI coverage gate: the quality job fails when line coverage drops below 90% (`tests/coverage-check.php`).
 - `PhalconValidation\Exceptions\InvalidRuleConfigurationException`.
-- Test suite expanded to 1271 tests (line coverage 74.4% → 98.1%): file rule edge cases, `normalize_files`, core engine, Phalcon adapter mappings, a non-scalar input sweep over every rule and filter, and a native-adapter vs PHP-engine parity matrix.
+- Optional format parameter for `future_date,[format]`, `past_date,[format]`, `business_day,[format]`, `min_age,years,[format]` and `date_range,start;end;[format]` (the bounds use the same format).
+- `PhalconValidation\Support\DateParser`: strict date parsing shared by all date rules.
+- Test suite expanded to 1311 tests (line coverage 74.4% → 98.1%): file rule edge cases, `normalize_files`, core engine, Phalcon adapter mappings, a non-scalar input sweep over every rule and filter, and a native-adapter vs PHP-engine parity matrix.
 
 ### Changed
 - Locale codes are normalized (`EN` → `en`, `en-us` → `en_US`).
@@ -28,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.github/copilot-instructions.md` and Cursor rules now point to `AGENTS.md`; the legacy `.cursorrules` file was replaced by `.cursor/rules/library.mdc`.
 - `composer.json`: `php` constraint simplified to `^8.1`; removed `optimize-autoloader` (no effect for libraries).
 - **Behaviour change:** `unique` and `exists` throw `InvalidRuleConfigurationException` when the model class is missing or does not exist. Previously the rule silently failed and reported the field as invalid (e.g. "has already been taken").
+- **Behaviour change:** `date_range`, `future_date`, `past_date`, `business_day` and `min_age` no longer use `strtotime()`. Like `date`, they accept only ISO 8601 values unless a format is given, so relative or free-form strings (`tomorrow`, `next monday`, `15 March 1990`; `a` was read as "now" and passed `business_day`) and overflowing dates (`2024-02-30`) now fail. Pass a format (e.g. `min_age,18,d/m/Y`) for other layouts.
+- `min_age` fails for birth dates in the future. Previously the absolute difference was used, so a birth date 20 years ahead passed `min_age,18`.
 - Only Phalcon v5 is supported. Documentation, the README badge and the `ext-phalcon` suggestion no longer claim Phalcon v6 support.
 - Security support policy: only the latest minor release (1.2.x) receives fixes.
 

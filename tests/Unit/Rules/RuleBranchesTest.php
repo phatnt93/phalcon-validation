@@ -20,7 +20,7 @@ class RuleBranchesTest extends TestCase
     public static function branchProvider(): array
     {
         return [
-            'min_age natural language date' => ['min_age', '15 March 1990', ['18'], true],
+            'min_age natural language date' => ['min_age', '15 March 1990', ['18'], false],
             'min_age unparsable' => ['min_age', 'not a date', ['18'], false],
             'word_count min/max keywords pass' => ['word_count', 'one two three', ['min', '2', 'max', '3'], true],
             'word_count min/max keywords fail' => ['word_count', 'one', ['min', '2', 'max', '3'], false],
