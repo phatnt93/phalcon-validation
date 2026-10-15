@@ -20,6 +20,6 @@ class EvenRule extends AbstractRule
             return false;
         }
 
-        return ((int)$value) % 2 === 0;
+        return ((int) $value) % 2 === 0;
     }
 }

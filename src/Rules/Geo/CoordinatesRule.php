@@ -32,8 +32,8 @@ class CoordinatesRule extends AbstractRule
             return false;
         }
 
-        $latVal = (float)$lat;
-        $lngVal = (float)$lng;
+        $latVal = (float) $lat;
+        $lngVal = (float) $lng;
 
         return $latVal >= -90.0 && $latVal <= 90.0 && $lngVal >= -180.0 && $lngVal <= 180.0;
     }

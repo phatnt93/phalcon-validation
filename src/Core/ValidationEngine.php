@@ -21,7 +21,7 @@ class ValidationEngine
     public function __construct(
         private RuleRegistryInterface $ruleRegistry,
         private FilterRegistryInterface $filterRegistry,
-        private TranslatorInterface $translator
+        private TranslatorInterface $translator,
     ) {
         $this->filterEngine = new FilterEngine($this->filterRegistry);
         $this->ruleEngine = new RuleEngine($this->ruleRegistry, $this->translator);
@@ -90,11 +90,11 @@ class ValidationEngine
         $allowedFields = array_keys($rules);
 
         foreach (array_keys($data) as $field) {
-            $fieldStr = (string)$field;
+            $fieldStr = (string) $field;
             $isAllowed = false;
 
             foreach ($allowedFields as $allowed) {
-                $allowedStr = (string)$allowed;
+                $allowedStr = (string) $allowed;
                 if ($allowedStr === $fieldStr) {
                     $isAllowed = true;
                     break;

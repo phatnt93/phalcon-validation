@@ -72,12 +72,30 @@ class NormalizeFilesFilterTest extends TestCase
     public function testNormalizesPhalconLikeFileObject(): void
     {
         $mockFile = new class {
-            public function getName(): string { return 'document.pdf'; }
-            public function getType(): string { return 'application/pdf'; }
-            public function getTempName(): string { return '/tmp/phppdf'; }
-            public function getError(): int { return 0; }
-            public function getSize(): int { return 9999; }
-            public function getExtension(): string { return 'pdf'; }
+            public function getName(): string
+            {
+                return 'document.pdf';
+            }
+            public function getType(): string
+            {
+                return 'application/pdf';
+            }
+            public function getTempName(): string
+            {
+                return '/tmp/phppdf';
+            }
+            public function getError(): int
+            {
+                return 0;
+            }
+            public function getSize(): int
+            {
+                return 9999;
+            }
+            public function getExtension(): string
+            {
+                return 'pdf';
+            }
         };
 
         $result = $this->filter->filter($mockFile);

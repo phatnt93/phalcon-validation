@@ -91,7 +91,7 @@ class MessageBag implements Countable
     public function getReadableErrors(
         bool $asHtml = false,
         string $fieldClass = 'gump-field',
-        string $errorClass = 'gump-error-message'
+        string $errorClass = 'gump-error-message',
     ): array|string {
         $messages = [];
         foreach ($this->errors as $err) {

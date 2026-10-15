@@ -38,7 +38,7 @@ class NoiseWordsFilter extends AbstractFilter
         }
 
         $pattern = '/\b(' . implode('|', self::NOISE_WORDS) . ')\b/i';
-        $cleaned = (string)preg_replace($pattern, '', $value);
-        return trim((string)preg_replace('/\s+/', ' ', $cleaned));
+        $cleaned = (string) preg_replace($pattern, '', $value);
+        return trim((string) preg_replace('/\s+/', ' ', $cleaned));
     }
 }

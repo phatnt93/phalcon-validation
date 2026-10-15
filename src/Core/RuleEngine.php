@@ -27,9 +27,8 @@ class RuleEngine
 
     public function __construct(
         private RuleRegistryInterface $registry,
-        private TranslatorInterface $translator
-    ) {
-    }
+        private TranslatorInterface $translator,
+    ) {}
 
     /**
      * Validate data against rules, populating the MessageBag with any violations.
@@ -45,7 +44,7 @@ class RuleEngine
         $hasErrors = false;
 
         foreach ($ruleSet as $fieldPattern => $ruleDef) {
-            $fieldPatternStr = (string)$fieldPattern;
+            $fieldPatternStr = (string) $fieldPattern;
             $paths = Arr::expandWildcards($data, $fieldPatternStr);
 
             // If a wildcard pattern like 'items.*.id' expanded to empty because 'items' is empty or missing
@@ -128,7 +127,7 @@ class RuleEngine
     {
         $replace = [
             '{field}' => $this->translator->getFieldName($path),
-            '{value}' => is_scalar($value) ? (string)$value : (is_array($value) ? json_encode($value) : gettype($value)),
+            '{value}' => is_scalar($value) ? (string) $value : (is_array($value) ? json_encode($value) : gettype($value)),
             '{default}' => $defaultMessage,
         ];
 

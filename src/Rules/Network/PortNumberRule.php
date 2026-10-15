@@ -20,7 +20,7 @@ class PortNumberRule extends AbstractRule
             return false;
         }
 
-        $port = (int)$value;
+        $port = (int) $value;
         return $port >= 1 && $port <= 65535;
     }
 }

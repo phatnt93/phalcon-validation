@@ -16,6 +16,6 @@ class ContainsListRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        return in_array((string)$value, array_map('strval', $params), true);
+        return in_array((string) $value, array_map('strval', $params), true);
     }
 }

@@ -23,10 +23,10 @@ class DateRule extends AbstractRule
 
         $format = $params[0] ?? null;
         if ($format !== null && $format !== '') {
-            $d = DateTime::createFromFormat($format, (string)$value);
-            return $d && $d->format($format) === (string)$value;
+            $d = DateTime::createFromFormat($format, (string) $value);
+            return $d && $d->format($format) === (string) $value;
         }
 
-        return strtotime((string)$value) !== false;
+        return strtotime((string) $value) !== false;
     }
 }

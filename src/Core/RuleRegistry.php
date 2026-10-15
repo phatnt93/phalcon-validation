@@ -7,18 +7,15 @@ namespace PhalconValidation\Core;
 use PhalconValidation\Contracts\RuleInterface;
 use PhalconValidation\Contracts\RuleRegistryInterface;
 use PhalconValidation\Rules\CallbackRule;
-
 // Presence
 use PhalconValidation\Rules\Presence\RequiredRule;
 use PhalconValidation\Rules\Presence\RequiredFileRule;
-
 // Strings
 use PhalconValidation\Rules\Strings\MinLenRule;
 use PhalconValidation\Rules\Strings\MaxLenRule;
 use PhalconValidation\Rules\Strings\ExactLenRule;
 use PhalconValidation\Rules\Strings\BetweenLenRule;
 use PhalconValidation\Rules\Strings\WordCountRule;
-
 // Characters
 use PhalconValidation\Rules\Characters\AlphaRule;
 use PhalconValidation\Rules\Characters\AlphaNumericRule;
@@ -29,7 +26,6 @@ use PhalconValidation\Rules\Characters\AlphaSpaceRule;
 use PhalconValidation\Rules\Characters\CamelCaseRule;
 use PhalconValidation\Rules\Characters\SnakeCaseRule;
 use PhalconValidation\Rules\Characters\UrlSlugRule;
-
 // Numeric
 use PhalconValidation\Rules\Numeric\NumericRule;
 use PhalconValidation\Rules\Numeric\IntegerRule;
@@ -41,11 +37,9 @@ use PhalconValidation\Rules\Numeric\EvenRule;
 use PhalconValidation\Rules\Numeric\OddRule;
 use PhalconValidation\Rules\Numeric\PrimeRule;
 use PhalconValidation\Rules\Numeric\StartsRule;
-
 // Comparison & Regex
 use PhalconValidation\Rules\Comparison\EqualsFieldRule;
 use PhalconValidation\Rules\Regex\RegexRule;
-
 // Network
 use PhalconValidation\Rules\Network\ValidEmailRule;
 use PhalconValidation\Rules\Network\ValidUrlRule;
@@ -58,7 +52,6 @@ use PhalconValidation\Rules\Network\DomainNameRule;
 use PhalconValidation\Rules\Network\PortNumberRule;
 use PhalconValidation\Rules\Network\SocialHandleRule;
 use PhalconValidation\Rules\Network\ValidNameRule;
-
 // DateTime
 use PhalconValidation\Rules\DateTime\DateRule;
 use PhalconValidation\Rules\DateTime\DateRangeRule;
@@ -67,20 +60,17 @@ use PhalconValidation\Rules\DateTime\PastDateRule;
 use PhalconValidation\Rules\DateTime\BusinessDayRule;
 use PhalconValidation\Rules\DateTime\ValidTimeRule;
 use PhalconValidation\Rules\DateTime\MinAgeRule;
-
 // Geo
 use PhalconValidation\Rules\Geo\LatitudeRule;
 use PhalconValidation\Rules\Geo\LongitudeRule;
 use PhalconValidation\Rules\Geo\CoordinatesRule;
 use PhalconValidation\Rules\Geo\PostalCodeRule;
 use PhalconValidation\Rules\Geo\StreetAddressRule;
-
 // Iso
 use PhalconValidation\Rules\Iso\CountryCodeRule;
 use PhalconValidation\Rules\Iso\CurrencyCodeRule;
 use PhalconValidation\Rules\Iso\LanguageCodeRule;
 use PhalconValidation\Rules\Iso\TimezoneRule;
-
 // Security & Finance
 use PhalconValidation\Rules\Security\ValidCcRule;
 use PhalconValidation\Rules\Security\IbanRule;
@@ -93,11 +83,9 @@ use PhalconValidation\Rules\Security\StrongPasswordRule;
 use PhalconValidation\Rules\Security\NoSqlInjectionRule;
 use PhalconValidation\Rules\Security\NoXssRule;
 use PhalconValidation\Rules\Security\PhoneNumberRule;
-
 // Color
 use PhalconValidation\Rules\Color\HexColorRule;
 use PhalconValidation\Rules\Color\RgbColorRule;
-
 // Content
 use PhalconValidation\Rules\Content\ContainsRule;
 use PhalconValidation\Rules\Content\ContainsListRule;
@@ -106,13 +94,11 @@ use PhalconValidation\Rules\Content\ValidJsonStringRule;
 use PhalconValidation\Rules\Content\ValidArraySizeEqualRule;
 use PhalconValidation\Rules\Content\ValidArraySizeGreaterRule;
 use PhalconValidation\Rules\Content\ValidArraySizeLesserRule;
-
 // Files
 use PhalconValidation\Rules\Files\ExtensionRule;
 use PhalconValidation\Rules\Files\MimeTypeRule;
 use PhalconValidation\Rules\Files\MaxFileSizeRule;
 use PhalconValidation\Rules\Files\MinFileSizeRule;
-
 // Phalcon ORM Rules
 use PhalconValidation\Rules\Phalcon\UniqueModelRule;
 use PhalconValidation\Rules\Phalcon\ExistsModelRule;

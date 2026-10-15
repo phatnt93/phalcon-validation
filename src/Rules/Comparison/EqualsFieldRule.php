@@ -23,6 +23,6 @@ class EqualsFieldRule extends AbstractRule
         }
 
         $otherValue = Arr::get($data, $targetField);
-        return (string)$value === (string)$otherValue;
+        return (string) $value === (string) $otherValue;
     }
 }

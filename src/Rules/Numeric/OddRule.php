@@ -20,6 +20,6 @@ class OddRule extends AbstractRule
             return false;
         }
 
-        return abs((int)$value) % 2 === 1;
+        return abs((int) $value) % 2 === 1;
     }
 }

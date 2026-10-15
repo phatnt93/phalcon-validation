@@ -24,7 +24,7 @@ class TrimFilter extends AbstractFilter
         if (empty($params) && PhalconFilterAdapter::isAvailable()) {
             $phalconFilter = PhalconFilterAdapter::getInstance();
             if ($phalconFilter !== null) {
-                return (string)$phalconFilter->sanitize($value, 'trim');
+                return (string) $phalconFilter->sanitize($value, 'trim');
             }
         }
 

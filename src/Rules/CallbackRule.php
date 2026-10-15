@@ -25,6 +25,6 @@ class CallbackRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        return (bool)call_user_func($this->callback, $field, $value, $params, $data);
+        return (bool) call_user_func($this->callback, $field, $value, $params, $data);
     }
 }

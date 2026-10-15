@@ -14,9 +14,8 @@ use PhalconValidation\Support\Arr;
 class FilterEngine
 {
     public function __construct(
-        private FilterRegistryInterface $registry
-    ) {
-    }
+        private FilterRegistryInterface $registry,
+    ) {}
 
     /**
      * Filter and sanitize an input array according to the given filter rules.
@@ -33,7 +32,7 @@ class FilterEngine
         }
 
         foreach ($filterRules as $fieldPattern => $filterDef) {
-            $paths = Arr::expandWildcards($data, (string)$fieldPattern);
+            $paths = Arr::expandWildcards($data, (string) $fieldPattern);
 
             foreach ($paths as $path) {
                 if (!Arr::has($data, $path)) {

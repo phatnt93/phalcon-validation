@@ -20,6 +20,6 @@ class PostalCodeRule extends AbstractRule
             return false;
         }
 
-        return preg_match('/^[a-zA-Z0-9\s-]{3,10}$/', (string)$value) === 1;
+        return preg_match('/^[a-zA-Z0-9\s-]{3,10}$/', (string) $value) === 1;
     }
 }

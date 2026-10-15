@@ -23,7 +23,7 @@ class LowercaseFilter extends AbstractFilter
         if (PhalconFilterAdapter::isAvailable()) {
             $phalconFilter = PhalconFilterAdapter::getInstance();
             if ($phalconFilter !== null) {
-                return (string)$phalconFilter->sanitize($value, 'lower');
+                return (string) $phalconFilter->sanitize($value, 'lower');
             }
         }
 

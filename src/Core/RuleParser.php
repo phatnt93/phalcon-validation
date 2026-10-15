@@ -73,7 +73,7 @@ class RuleParser
             if (is_string($key) && (is_string($rule) || is_numeric($rule))) {
                 $parsed[] = [
                     'name' => $key,
-                    'params' => [(string)$rule],
+                    'params' => [(string) $rule],
                     'custom' => null,
                     'raw' => $key . ',' . $rule,
                 ];
@@ -82,7 +82,7 @@ class RuleParser
 
             if (is_array($rule)) {
                 if (!empty($rule)) {
-                    $name = (string)array_shift($rule);
+                    $name = (string) array_shift($rule);
                     $params = array_map('strval', array_values($rule));
                     $parsed[] = [
                         'name' => $name,

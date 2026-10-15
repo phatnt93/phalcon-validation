@@ -20,7 +20,7 @@ class PrimeRule extends AbstractRule
             return false;
         }
 
-        $n = (int)$value;
+        $n = (int) $value;
         if ($n <= 1) {
             return false;
         }

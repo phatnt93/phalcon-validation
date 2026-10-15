@@ -17,7 +17,7 @@ class ExactLenRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        $exact = (int)($params[0] ?? 0);
-        return Str::length((string)$value) === $exact;
+        $exact = (int) ($params[0] ?? 0);
+        return Str::length((string) $value) === $exact;
     }
 }

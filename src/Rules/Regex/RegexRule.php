@@ -22,7 +22,7 @@ class RegexRule extends AbstractRule
         }
 
         // Error suppression in case user provides malformed regex pattern
-        $result = @preg_match($pattern, (string)$value);
+        $result = @preg_match($pattern, (string) $value);
         return $result === 1;
     }
 }

@@ -20,7 +20,7 @@ class SanitizeStringFilter extends AbstractFilter
         // Remove script tags and their content
         $cleaned = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $value);
         // Strip other HTML tags
-        $cleaned = strip_tags((string)$cleaned);
+        $cleaned = strip_tags((string) $cleaned);
 
         return $cleaned;
     }

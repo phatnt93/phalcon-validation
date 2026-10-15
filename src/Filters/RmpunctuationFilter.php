@@ -17,6 +17,6 @@ class RmpunctuationFilter extends AbstractFilter
             return $value;
         }
 
-        return (string)preg_replace('/[[:punct:]]/u', '', $value);
+        return (string) preg_replace('/[[:punct:]]/u', '', $value);
     }
 }

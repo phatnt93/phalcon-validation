@@ -123,7 +123,7 @@ class Validator
         array $data,
         mixed $rulesOrCheckFields = false,
         array $filters = [],
-        bool $check_fields = false
+        bool $check_fields = false,
     ): array|false {
         $rules = $this->validationRules;
         $activeFilters = $this->filterRules;
@@ -211,7 +211,7 @@ class Validator
     public function get_readable_errors(
         bool $convert_to_string = false,
         string $field_class = 'gump-field',
-        string $error_class = 'gump-error-message'
+        string $error_class = 'gump-error-message',
     ): array|string {
         return $this->lastErrors->getReadableErrors($convert_to_string, $field_class, $error_class);
     }
@@ -233,7 +233,7 @@ class Validator
         array $data,
         array $rules,
         array $filters = [],
-        bool $check_fields = false
+        bool $check_fields = false,
     ): ValidationResult {
         return $this->engine->run($data, $rules, $filters, $check_fields);
     }
@@ -276,7 +276,7 @@ class Validator
     public static function is_valid(
         array $data,
         array $validators,
-        array $fields_error_messages = []
+        array $fields_error_messages = [],
     ): bool|array {
         $validator = new self();
         if (!empty($fields_error_messages)) {

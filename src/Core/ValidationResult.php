@@ -21,9 +21,8 @@ class ValidationResult implements ValidationResultInterface, ArrayAccess
      */
     public function __construct(
         private array $data,
-        private MessageBag $messageBag
-    ) {
-    }
+        private MessageBag $messageBag,
+    ) {}
 
     public function isValid(): bool
     {
@@ -48,7 +47,7 @@ class ValidationResult implements ValidationResultInterface, ArrayAccess
     public function getReadableErrors(
         bool $asHtml = false,
         string $fieldClass = 'gump-field',
-        string $errorClass = 'gump-error-message'
+        string $errorClass = 'gump-error-message',
     ): array|string {
         return $this->messageBag->getReadableErrors($asHtml, $fieldClass, $errorClass);
     }

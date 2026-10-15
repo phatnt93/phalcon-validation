@@ -16,7 +16,7 @@ class ValidArraySizeLesserRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        $max = (int)($params[0] ?? PHP_INT_MAX);
+        $max = (int) ($params[0] ?? PHP_INT_MAX);
         return is_array($value) && count($value) <= $max;
     }
 }

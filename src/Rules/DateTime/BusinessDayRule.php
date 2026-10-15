@@ -16,12 +16,12 @@ class BusinessDayRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        $timestamp = strtotime((string)$value);
+        $timestamp = strtotime((string) $value);
         if ($timestamp === false) {
             return false;
         }
 
-        $dayOfWeek = (int)date('N', $timestamp);
+        $dayOfWeek = (int) date('N', $timestamp);
         return $dayOfWeek >= 1 && $dayOfWeek <= 5;
     }
 }

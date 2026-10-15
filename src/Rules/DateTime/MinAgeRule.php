@@ -17,11 +17,11 @@ class MinAgeRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        $minAge = (int)($params[0] ?? 0);
-        $birthDate = DateTime::createFromFormat('Y-m-d', (string)$value);
+        $minAge = (int) ($params[0] ?? 0);
+        $birthDate = DateTime::createFromFormat('Y-m-d', (string) $value);
 
         if (!$birthDate) {
-            $timestamp = strtotime((string)$value);
+            $timestamp = strtotime((string) $value);
             if ($timestamp === false) {
                 return false;
             }

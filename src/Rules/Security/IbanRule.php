@@ -16,7 +16,7 @@ class IbanRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        $iban = strtoupper(str_replace(' ', '', (string)$value));
+        $iban = strtoupper(str_replace(' ', '', (string) $value));
         if (!preg_match('/^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}$/', $iban)) {
             return false;
         }
@@ -37,7 +37,7 @@ class IbanRule extends AbstractRule
         // Perform modulo 97 on large numeric string
         $remainder = 0;
         foreach (str_split($numericString, 7) as $chunk) {
-            $remainder = (int)($remainder . $chunk) % 97;
+            $remainder = (int) ($remainder . $chunk) % 97;
         }
 
         return $remainder === 1;

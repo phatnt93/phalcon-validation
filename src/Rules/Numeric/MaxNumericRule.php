@@ -20,7 +20,7 @@ class MaxNumericRule extends AbstractRule
             return false;
         }
 
-        $max = (float)($params[0] ?? PHP_FLOAT_MAX);
-        return (float)$value <= $max;
+        $max = (float) ($params[0] ?? PHP_FLOAT_MAX);
+        return (float) $value <= $max;
     }
 }

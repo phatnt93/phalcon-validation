@@ -56,7 +56,7 @@ class Translator implements TranslatorInterface
     public function setFieldNames(array $names): self
     {
         foreach ($names as $field => $label) {
-            $this->fieldNames[(string)$field] = (string)$label;
+            $this->fieldNames[(string) $field] = (string) $label;
         }
         return $this;
     }
@@ -74,7 +74,7 @@ class Translator implements TranslatorInterface
         }
 
         // For nested fields like 'items.0.price', check if there's a wildcard alias 'items.*.price'
-        $wildcardPattern = (string)preg_replace('/\.\d+\./', '.*.', $field);
+        $wildcardPattern = (string) preg_replace('/\.\d+\./', '.*.', $field);
         if (isset($this->fieldNames[$wildcardPattern])) {
             return $this->fieldNames[$wildcardPattern];
         }
@@ -85,7 +85,7 @@ class Translator implements TranslatorInterface
     public function setCustomMessages(array $messages): self
     {
         foreach ($messages as $key => $msg) {
-            $this->customMessages[(string)$key] = $msg;
+            $this->customMessages[(string) $key] = $msg;
         }
         return $this;
     }
@@ -105,7 +105,7 @@ class Translator implements TranslatorInterface
 
         foreach ($replace as $placeholder => $val) {
             $search[] = $placeholder;
-            $values[] = is_array($val) ? implode(', ', $val) : (string)$val;
+            $values[] = is_array($val) ? implode(', ', $val) : (string) $val;
         }
 
         return str_replace($search, $values, $template);

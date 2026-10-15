@@ -17,8 +17,8 @@ class Str
         $key = $value;
         if (!ctype_lower($key)) {
             $value = preg_replace('/\s+/u', '', ucwords($value));
-            $value = preg_replace('/(.)(?=[A-Z])/u', '$1' . $delimiter, (string)$value);
-            return mb_strtolower((string)$value, 'UTF-8');
+            $value = preg_replace('/(.)(?=[A-Z])/u', '$1' . $delimiter, (string) $value);
+            return mb_strtolower((string) $value, 'UTF-8');
         }
         return $value;
     }
@@ -50,7 +50,7 @@ class Str
         if (function_exists('transliterator_transliterate')) {
             $text = transliterator_transliterate('Any-Latin; Latin-ASCII; Lower()', $title);
             if ($text !== false) {
-                $title = (string)$text;
+                $title = (string) $text;
             }
         } else {
             // 2. Fallback Vietnamese character map
@@ -60,13 +60,13 @@ class Str
         // Replace non letter or digits by separator
         $text = preg_replace('~[^\pL\d]+~u', $separator, $title);
         // Remove unwanted characters
-        $text = preg_replace('~[^-\w]+~', '', (string)$text);
+        $text = preg_replace('~[^-\w]+~', '', (string) $text);
         // Trim separators
-        $text = trim((string)$text, $separator);
+        $text = trim((string) $text, $separator);
         // Remove duplicate separators
-        $text = preg_replace('~-+~', $separator, (string)$text);
+        $text = preg_replace('~-+~', $separator, (string) $text);
 
-        return strtolower((string)$text);
+        return strtolower((string) $text);
     }
 
     /**

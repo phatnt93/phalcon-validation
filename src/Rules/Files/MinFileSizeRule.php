@@ -25,7 +25,7 @@ class MinFileSizeRule extends AbstractRule
             return false;
         }
 
-        $minBytes = $this->parseBytes((string)$params[0]);
+        $minBytes = $this->parseBytes((string) $params[0]);
         if ($minBytes <= 0) {
             return false;
         }
@@ -93,21 +93,21 @@ class MinFileSizeRule extends AbstractRule
     private function detectFileSize(mixed $file): ?int
     {
         if (is_object($file) && method_exists($file, 'getSize')) {
-            return (int)$file->getSize();
+            return (int) $file->getSize();
         }
 
         if (is_string($file) && is_file($file)) {
             $bytes = @filesize($file);
-            return $bytes !== false ? (int)$bytes : null;
+            return $bytes !== false ? (int) $bytes : null;
         }
 
         if (is_array($file)) {
             if (isset($file['size']) && is_numeric($file['size'])) {
-                return (int)$file['size'];
+                return (int) $file['size'];
             }
             if (isset($file['tmp_name']) && is_string($file['tmp_name']) && is_file($file['tmp_name'])) {
                 $bytes = @filesize($file['tmp_name']);
-                return $bytes !== false ? (int)$bytes : null;
+                return $bytes !== false ? (int) $bytes : null;
             }
         }
 
@@ -118,7 +118,7 @@ class MinFileSizeRule extends AbstractRule
     {
         $size = trim(strtolower($size));
         if (is_numeric($size)) {
-            return (int)$size;
+            return (int) $size;
         }
 
         $units = [
@@ -132,12 +132,12 @@ class MinFileSizeRule extends AbstractRule
         ];
 
         if (preg_match('/^([0-9]+(?:\.[0-9]+)?)\s*([a-z]+)$/', $size, $matches)) {
-            $number = (float)$matches[1];
+            $number = (float) $matches[1];
             $unit = $matches[2];
             $multiplier = $units[$unit] ?? 1;
-            return (int)round($number * $multiplier);
+            return (int) round($number * $multiplier);
         }
 
-        return (int)$size;
+        return (int) $size;
     }
 }

@@ -34,7 +34,7 @@ class PhalconValidation
         array $rules,
         array $filters = [],
         bool $check_fields = false,
-        string $lang = 'en'
+        string $lang = 'en',
     ): array|false {
         $validator = new Validator($lang);
         return $validator->run($data, $rules, $filters, $check_fields);
@@ -55,7 +55,7 @@ class PhalconValidation
         array $rules,
         array $filters = [],
         bool $check_fields = false,
-        string $lang = 'en'
+        string $lang = 'en',
     ): ValidationResult {
         $validator = new Validator($lang);
         return $validator->validateData($data, $rules, $filters, $check_fields);
@@ -74,7 +74,7 @@ class PhalconValidation
         array $data,
         array $rules,
         array $customMessages = [],
-        string $lang = 'en'
+        string $lang = 'en',
     ): bool|array {
         $validator = new Validator($lang);
         if (!empty($customMessages)) {

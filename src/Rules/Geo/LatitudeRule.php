@@ -20,7 +20,7 @@ class LatitudeRule extends AbstractRule
             return false;
         }
 
-        $lat = (float)$value;
+        $lat = (float) $value;
         return $lat >= -90.0 && $lat <= 90.0;
     }
 }

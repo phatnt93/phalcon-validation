@@ -212,7 +212,7 @@ class FileUploadValidationTest extends TestCase
             ],
             [
                 'gallery' => 'normalize_files',
-            ]
+            ],
         );
 
         $this->assertFalse($result->isValid());

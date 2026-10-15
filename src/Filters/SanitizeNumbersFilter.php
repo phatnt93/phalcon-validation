@@ -17,6 +17,6 @@ class SanitizeNumbersFilter extends AbstractFilter
             return null;
         }
 
-        return (string)preg_replace('/[^0-9+-]/', '', (string)$value);
+        return (string) preg_replace('/[^0-9+-]/', '', (string) $value);
     }
 }

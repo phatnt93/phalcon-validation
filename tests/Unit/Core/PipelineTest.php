@@ -15,11 +15,11 @@ class PipelineTest extends TestCase
         parent::setUp();
 
         Validator::add_filter('uppercase_custom', function ($value) {
-            return strtoupper(trim((string)$value));
+            return strtoupper(trim((string) $value));
         });
 
         Validator::add_validator('starts_with_test', function ($field, $value, $params, $data) {
-            return str_starts_with((string)$value, $params[0] ?? '');
+            return str_starts_with((string) $value, $params[0] ?? '');
         }, 'The {field} field must start with {param:0}.');
     }
 
@@ -92,7 +92,7 @@ class PipelineTest extends TestCase
     {
         $result = PhalconValidation::check(
             ['name' => 'ADMIN_BOSS'],
-            ['name' => 'starts_with_test,ADMIN']
+            ['name' => 'starts_with_test,ADMIN'],
         );
 
         $this->assertTrue($result->isValid());
@@ -124,7 +124,7 @@ class PipelineTest extends TestCase
         $clean = PhalconValidation::run(
             ['username' => '   '],
             ['username' => 'required'],
-            ['username' => 'trim']
+            ['username' => 'trim'],
         );
 
         // Whitespace cleaned to empty string, required fails

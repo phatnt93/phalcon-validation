@@ -20,7 +20,7 @@ class LongitudeRule extends AbstractRule
             return false;
         }
 
-        $lng = (float)$value;
+        $lng = (float) $value;
         return $lng >= -180.0 && $lng <= 180.0;
     }
 }

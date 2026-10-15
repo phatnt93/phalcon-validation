@@ -25,7 +25,7 @@ class MimeTypeRule extends AbstractRule
     {
         $allowed = [];
         foreach ($params as $param) {
-            foreach (preg_split('/[;,]/', (string)$param) ?: [] as $mime) {
+            foreach (preg_split('/[;,]/', (string) $param) ?: [] as $mime) {
                 $mime = strtolower(trim($mime));
                 if ($mime !== '') {
                     $allowed[] = $mime;
@@ -112,13 +112,13 @@ class MimeTypeRule extends AbstractRule
         // Case: Phalcon Http Request FileInterface
         if (is_object($file)) {
             if (method_exists($file, 'getRealType')) {
-                $type = (string)$file->getRealType();
+                $type = (string) $file->getRealType();
                 if ($type !== '') {
                     return $type;
                 }
             }
             if (method_exists($file, 'getTempName')) {
-                $tmp = (string)$file->getTempName();
+                $tmp = (string) $file->getTempName();
                 if ($tmp !== '' && is_file($tmp)) {
                     $real = $this->detectFromFilePath($tmp);
                     if ($real !== null) {
@@ -127,7 +127,7 @@ class MimeTypeRule extends AbstractRule
                 }
             }
             if (method_exists($file, 'getType')) {
-                return (string)$file->getType();
+                return (string) $file->getType();
             }
             return null;
         }
@@ -142,7 +142,7 @@ class MimeTypeRule extends AbstractRule
 
         // Case: Array with tmp_name and/or type
         if (is_array($file)) {
-            $tmpName = (string)($file['tmp_name'] ?? '');
+            $tmpName = (string) ($file['tmp_name'] ?? '');
             if ($tmpName !== '' && is_file($tmpName)) {
                 $real = $this->detectFromFilePath($tmpName);
                 if ($real !== null) {

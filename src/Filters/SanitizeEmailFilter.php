@@ -23,11 +23,11 @@ class SanitizeEmailFilter extends AbstractFilter
         if (PhalconFilterAdapter::isAvailable()) {
             $phalconFilter = PhalconFilterAdapter::getInstance();
             if ($phalconFilter !== null) {
-                return (string)$phalconFilter->sanitize($value, 'email');
+                return (string) $phalconFilter->sanitize($value, 'email');
             }
         }
 
         $sanitized = filter_var($value, FILTER_SANITIZE_EMAIL);
-        return $sanitized !== false ? (string)$sanitized : '';
+        return $sanitized !== false ? (string) $sanitized : '';
     }
 }

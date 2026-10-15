@@ -20,7 +20,7 @@ class MinNumericRule extends AbstractRule
             return false;
         }
 
-        $min = (float)($params[0] ?? 0);
-        return (float)$value >= $min;
+        $min = (float) ($params[0] ?? 0);
+        return (float) $value >= $min;
     }
 }

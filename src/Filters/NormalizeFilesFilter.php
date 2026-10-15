@@ -49,12 +49,12 @@ class NormalizeFilesFilter extends AbstractFilter
             $keys = array_keys($value['name']);
 
             foreach ($keys as $k) {
-                $name = (string)($value['name'][$k] ?? '');
-                $error = (int)($value['error'][$k] ?? UPLOAD_ERR_NO_FILE);
-                $tmpName = (string)($value['tmp_name'][$k] ?? '');
-                $type = (string)($value['type'][$k] ?? '');
-                $size = (int)($value['size'][$k] ?? 0);
-                $fullPath = (string)($value['full_path'][$k] ?? $name);
+                $name = (string) ($value['name'][$k] ?? '');
+                $error = (int) ($value['error'][$k] ?? UPLOAD_ERR_NO_FILE);
+                $tmpName = (string) ($value['tmp_name'][$k] ?? '');
+                $type = (string) ($value['type'][$k] ?? '');
+                $size = (int) ($value['size'][$k] ?? 0);
+                $fullPath = (string) ($value['full_path'][$k] ?? $name);
 
                 $normalized[] = [
                     'name' => $name,
@@ -73,12 +73,12 @@ class NormalizeFilesFilter extends AbstractFilter
         // e.g.: ['name' => 'a.png', 'type' => 'image/png', 'tmp_name' => '...', 'error' => 0, 'size' => 123]
         if (isset($value['name'], $value['error']) && !is_array($value['name']) && !is_array($value['error'])) {
             return [
-                'name' => (string)$value['name'],
-                'type' => (string)($value['type'] ?? ''),
-                'tmp_name' => (string)($value['tmp_name'] ?? ''),
-                'error' => (int)$value['error'],
-                'size' => (int)($value['size'] ?? 0),
-                'full_path' => (string)($value['full_path'] ?? $value['name']),
+                'name' => (string) $value['name'],
+                'type' => (string) ($value['type'] ?? ''),
+                'tmp_name' => (string) ($value['tmp_name'] ?? ''),
+                'error' => (int) $value['error'],
+                'size' => (int) ($value['size'] ?? 0),
+                'full_path' => (string) ($value['full_path'] ?? $value['name']),
             ];
         }
 
@@ -88,12 +88,12 @@ class NormalizeFilesFilter extends AbstractFilter
             foreach ($value as $item) {
                 if (is_array($item) && isset($item['name'])) {
                     $normalized[] = [
-                        'name' => (string)$item['name'],
-                        'type' => (string)($item['type'] ?? ''),
-                        'tmp_name' => (string)($item['tmp_name'] ?? ''),
-                        'error' => (int)($item['error'] ?? UPLOAD_ERR_OK),
-                        'size' => (int)($item['size'] ?? 0),
-                        'full_path' => (string)($item['full_path'] ?? $item['name']),
+                        'name' => (string) $item['name'],
+                        'type' => (string) ($item['type'] ?? ''),
+                        'tmp_name' => (string) ($item['tmp_name'] ?? ''),
+                        'error' => (int) ($item['error'] ?? UPLOAD_ERR_OK),
+                        'size' => (int) ($item['size'] ?? 0),
+                        'full_path' => (string) ($item['full_path'] ?? $item['name']),
                     ];
                 } elseif (is_string($item)) {
                     $normalized[] = [
@@ -117,12 +117,12 @@ class NormalizeFilesFilter extends AbstractFilter
     private function normalizePhalconFile(object $file): array
     {
         return [
-            'name' => method_exists($file, 'getName') ? (string)$file->getName() : '',
-            'type' => method_exists($file, 'getType') ? (string)$file->getType() : '',
-            'tmp_name' => method_exists($file, 'getTempName') ? (string)$file->getTempName() : '',
-            'error' => method_exists($file, 'getError') ? (int)$file->getError() : UPLOAD_ERR_OK,
-            'size' => method_exists($file, 'getSize') ? (int)$file->getSize() : 0,
-            'extension' => method_exists($file, 'getExtension') ? (string)$file->getExtension() : '',
+            'name' => method_exists($file, 'getName') ? (string) $file->getName() : '',
+            'type' => method_exists($file, 'getType') ? (string) $file->getType() : '',
+            'tmp_name' => method_exists($file, 'getTempName') ? (string) $file->getTempName() : '',
+            'error' => method_exists($file, 'getError') ? (int) $file->getError() : UPLOAD_ERR_OK,
+            'size' => method_exists($file, 'getSize') ? (int) $file->getSize() : 0,
+            'extension' => method_exists($file, 'getExtension') ? (string) $file->getExtension() : '',
         ];
     }
 }

@@ -16,7 +16,7 @@ class ValidArraySizeEqualRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        $expected = (int)($params[0] ?? 0);
+        $expected = (int) ($params[0] ?? 0);
         return is_array($value) && count($value) === $expected;
     }
 }

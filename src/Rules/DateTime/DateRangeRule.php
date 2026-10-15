@@ -16,13 +16,13 @@ class DateRangeRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        $timestamp = strtotime((string)$value);
+        $timestamp = strtotime((string) $value);
         if ($timestamp === false) {
             return false;
         }
 
-        $start = strtotime((string)($params[0] ?? ''));
-        $end = strtotime((string)($params[1] ?? ''));
+        $start = strtotime((string) ($params[0] ?? ''));
+        $end = strtotime((string) ($params[1] ?? ''));
 
         if ($start === false || $end === false) {
             return false;

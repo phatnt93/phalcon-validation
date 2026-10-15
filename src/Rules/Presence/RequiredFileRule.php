@@ -19,7 +19,7 @@ class RequiredFileRule extends AbstractRule
     {
         // 1. Single Phalcon Http Request FileInterface object
         if (is_object($value) && method_exists($value, 'getError')) {
-            $hasError = (int)$value->getError() !== UPLOAD_ERR_OK;
+            $hasError = (int) $value->getError() !== UPLOAD_ERR_OK;
             $hasSize = method_exists($value, 'getSize') ? $value->getSize() > 0 : true;
             return !$hasError && $hasSize;
         }
@@ -36,7 +36,7 @@ class RequiredFileRule extends AbstractRule
 
             foreach ($value as $file) {
                 if (is_object($file) && method_exists($file, 'getError')) {
-                    if ((int)$file->getError() !== UPLOAD_ERR_OK) {
+                    if ((int) $file->getError() !== UPLOAD_ERR_OK) {
                         return false;
                     }
                     if (method_exists($file, 'getSize') && $file->getSize() <= 0) {
@@ -49,7 +49,7 @@ class RequiredFileRule extends AbstractRule
                     return false;
                 }
 
-                if ((int)$file['error'] !== UPLOAD_ERR_OK) {
+                if ((int) $file['error'] !== UPLOAD_ERR_OK) {
                     return false;
                 }
 
@@ -57,7 +57,7 @@ class RequiredFileRule extends AbstractRule
                     return false;
                 }
 
-                if (isset($file['name']) && trim((string)$file['name']) === '') {
+                if (isset($file['name']) && trim((string) $file['name']) === '') {
                     return false;
                 }
             }
@@ -72,13 +72,13 @@ class RequiredFileRule extends AbstractRule
             }
 
             foreach ($value['error'] as $k => $error) {
-                if ((int)$error !== UPLOAD_ERR_OK) {
+                if ((int) $error !== UPLOAD_ERR_OK) {
                     return false;
                 }
                 if (isset($value['size'][$k]) && $value['size'][$k] <= 0) {
                     return false;
                 }
-                if (isset($value['name'][$k]) && trim((string)$value['name'][$k]) === '') {
+                if (isset($value['name'][$k]) && trim((string) $value['name'][$k]) === '') {
                     return false;
                 }
             }
@@ -88,7 +88,7 @@ class RequiredFileRule extends AbstractRule
 
         // 4. PHP Native $_FILES single upload structure (or single file associative array)
         if (isset($value['error']) && !is_array($value['error'])) {
-            if ((int)$value['error'] !== UPLOAD_ERR_OK) {
+            if ((int) $value['error'] !== UPLOAD_ERR_OK) {
                 return false;
             }
 
@@ -96,7 +96,7 @@ class RequiredFileRule extends AbstractRule
                 return false;
             }
 
-            if (isset($value['name']) && trim((string)$value['name']) === '') {
+            if (isset($value['name']) && trim((string) $value['name']) === '') {
                 return false;
             }
 

@@ -19,7 +19,7 @@ class ExtensionRule extends AbstractRule
     {
         $allowed = [];
         foreach ($params as $param) {
-            foreach (preg_split('/[;,]/', (string)$param) ?: [] as $ext) {
+            foreach (preg_split('/[;,]/', (string) $param) ?: [] as $ext) {
                 $ext = strtolower(trim($ext, " .\t\n\r\0\x0B"));
                 if ($ext !== '') {
                     $allowed[] = $ext;
@@ -47,10 +47,10 @@ class ExtensionRule extends AbstractRule
         // 2. Single object (e.g. Phalcon Http Request FileInterface)
         if (is_object($value)) {
             if (method_exists($value, 'getExtension')) {
-                return in_array(strtolower((string)$value->getExtension()), $allowed, true);
+                return in_array(strtolower((string) $value->getExtension()), $allowed, true);
             }
             if (method_exists($value, 'getName')) {
-                return $isValidExt((string)$value->getName());
+                return $isValidExt((string) $value->getName());
             }
             return false;
         }
@@ -72,18 +72,18 @@ class ExtensionRule extends AbstractRule
                     }
                 } elseif (is_object($item)) {
                     if (method_exists($item, 'getExtension')) {
-                        if (!in_array(strtolower((string)$item->getExtension()), $allowed, true)) {
+                        if (!in_array(strtolower((string) $item->getExtension()), $allowed, true)) {
                             return false;
                         }
                     } elseif (method_exists($item, 'getName')) {
-                        if (!$isValidExt((string)$item->getName())) {
+                        if (!$isValidExt((string) $item->getName())) {
                             return false;
                         }
                     } else {
                         return false;
                     }
                 } elseif (is_array($item)) {
-                    if (!isset($item['name']) || !$isValidExt((string)$item['name'])) {
+                    if (!isset($item['name']) || !$isValidExt((string) $item['name'])) {
                         return false;
                     }
                 } else {
@@ -101,7 +101,7 @@ class ExtensionRule extends AbstractRule
             }
 
             foreach ($value['name'] as $name) {
-                if (!$isValidExt((string)$name)) {
+                if (!$isValidExt((string) $name)) {
                     return false;
                 }
             }
@@ -111,7 +111,7 @@ class ExtensionRule extends AbstractRule
 
         // 5. PHP Native $_FILES single upload structure (or single file associative array)
         if (isset($value['name']) && !is_array($value['name'])) {
-            return $isValidExt((string)$value['name']);
+            return $isValidExt((string) $value['name']);
         }
 
         return false;

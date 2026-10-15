@@ -29,12 +29,12 @@ class Arr
             return $array[$key];
         }
 
-        if (!str_contains((string)$key, '.')) {
+        if (!str_contains((string) $key, '.')) {
             return $array[$key] ?? $default;
         }
 
         $current = $array;
-        foreach (explode('.', (string)$key) as $segment) {
+        foreach (explode('.', (string) $key) as $segment) {
             if (is_array($current) && array_key_exists($segment, $current)) {
                 $current = $current[$segment];
             } elseif ($current instanceof ArrayAccess && $current->offsetExists($segment)) {
@@ -60,7 +60,7 @@ class Arr
             return true;
         }
 
-        $segments = explode('.', (string)$key);
+        $segments = explode('.', (string) $key);
         $current = $array;
 
         foreach ($segments as $segment) {
@@ -90,7 +90,7 @@ class Arr
             return $array = is_array($value) ? $value : [$value];
         }
 
-        $keys = explode('.', (string)$key);
+        $keys = explode('.', (string) $key);
         $current = &$array;
 
         while (count($keys) > 1) {
@@ -149,7 +149,7 @@ class Arr
 
             $results = [];
             foreach (array_keys($currentData) as $key) {
-                $nextPrefix = $prefix === '' ? (string)$key : $prefix . '.' . $key;
+                $nextPrefix = $prefix === '' ? (string) $key : $prefix . '.' . $key;
                 $childResults = self::expandSegments($currentData[$key], $segments, $nextPrefix);
                 foreach ($childResults as $child) {
                     $results[] = $child;

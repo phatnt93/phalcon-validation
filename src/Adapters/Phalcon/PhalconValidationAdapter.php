@@ -53,7 +53,7 @@ class PhalconValidationAdapter
         $validation = new NativePhalconValidation();
 
         foreach ($rules as $field => $ruleDef) {
-            $fieldStr = (string)$field;
+            $fieldStr = (string) $field;
             $tokens = RuleParser::parseRules($ruleDef);
 
             foreach ($tokens as $token) {
@@ -92,26 +92,26 @@ class PhalconValidationAdapter
                 },
             ]),
             'min_len' => new StringLength([
-                'min' => (int)($params[0] ?? 0),
+                'min' => (int) ($params[0] ?? 0),
             ]),
             'max_len' => new StringLength([
-                'max' => (int)($params[0] ?? PHP_INT_MAX),
+                'max' => (int) ($params[0] ?? PHP_INT_MAX),
             ]),
             'exact_len' => new StringLength([
-                'min' => (int)($params[0] ?? 0),
-                'max' => (int)($params[0] ?? 0),
+                'min' => (int) ($params[0] ?? 0),
+                'max' => (int) ($params[0] ?? 0),
             ]),
             'between_len' => new StringLength([
-                'min' => (int)($params[0] ?? 0),
-                'max' => (int)($params[1] ?? PHP_INT_MAX),
+                'min' => (int) ($params[0] ?? 0),
+                'max' => (int) ($params[1] ?? PHP_INT_MAX),
             ]),
             'alpha' => new Alpha(),
             'alpha_numeric' => new Alnum(),
             'numeric' => new Numericality(),
             'integer' => new Digit(),
             'between_numeric' => new Between([
-                'minimum' => (float)($params[0] ?? 0),
-                'maximum' => (float)($params[1] ?? PHP_FLOAT_MAX),
+                'minimum' => (float) ($params[0] ?? 0),
+                'maximum' => (float) ($params[1] ?? PHP_FLOAT_MAX),
             ]),
             'equalsfield' => new Confirmation([
                 'with' => $params[0] ?? '',
@@ -141,7 +141,7 @@ class PhalconValidationAdapter
             return new Callback([
                 'callback' => function (array $data) use ($field, $custom, $params) {
                     $value = Arr::get($data, $field);
-                    return (bool)call_user_func($custom, $field, $value, $params, $data);
+                    return (bool) call_user_func($custom, $field, $value, $params, $data);
                 },
                 'message' => Validator::getGlobalTranslator()->trans('callback', [
                     '{field}' => Validator::getGlobalTranslator()->getFieldName($field),

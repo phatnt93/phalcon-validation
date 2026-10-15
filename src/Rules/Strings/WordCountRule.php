@@ -16,7 +16,7 @@ class WordCountRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        $words = preg_split('/\s+/u', trim((string)$value), -1, PREG_SPLIT_NO_EMPTY);
+        $words = preg_split('/\s+/u', trim((string) $value), -1, PREG_SPLIT_NO_EMPTY);
         $count = is_array($words) ? count($words) : 0;
 
         $min = 0;
@@ -27,18 +27,18 @@ class WordCountRule extends AbstractRule
             $total = count($params);
             for ($i = 0; $i < $total; $i++) {
                 if ($params[$i] === 'min' && isset($params[$i + 1])) {
-                    $min = (int)$params[$i + 1];
+                    $min = (int) $params[$i + 1];
                 } elseif ($params[$i] === 'max' && isset($params[$i + 1])) {
-                    $max = (int)$params[$i + 1];
+                    $max = (int) $params[$i + 1];
                 }
             }
         } else {
             // Format 2: word_count,10,500
             if (isset($params[0])) {
-                $min = (int)$params[0];
+                $min = (int) $params[0];
             }
             if (isset($params[1])) {
-                $max = (int)$params[1];
+                $max = (int) $params[1];
             }
         }
 

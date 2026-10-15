@@ -23,7 +23,7 @@ class UppercaseFilter extends AbstractFilter
         if (PhalconFilterAdapter::isAvailable()) {
             $phalconFilter = PhalconFilterAdapter::getInstance();
             if ($phalconFilter !== null) {
-                return (string)$phalconFilter->sanitize($value, 'upper');
+                return (string) $phalconFilter->sanitize($value, 'upper');
             }
         }
 
