@@ -22,6 +22,8 @@ class RuleParser
         'doesnt_contain_list',
         'date_range',
         'extension',
+        'mimetype',
+        'mime_type',
     ];
 
     /**

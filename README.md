@@ -2,7 +2,7 @@
 
 [📖 Bản Tiếng Việt (Vietnamese Documentation)](README.vn.md)
 
-[![Latest Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/phatnt93/phalcon-validation)
+[![Latest Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/phatnt93/phalcon-validation)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-8892BF.svg)](https://php.net)
 [![Phalcon Support](https://img.shields.io/badge/phalcon-v5%20%7C%20v6-green.svg)](https://phalcon.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -25,11 +25,12 @@ A fast, flexible, expressive, and human-friendly PHP Data Validation and Sanitiz
 6. [Nested Arrays and Wildcards](#6-nested-arrays-and-wildcards)
 7. [Field Aliases and Multi-Language Localization](#7-field-aliases-and-multi-language-localization)
 8. [Database ORM Validation (Unique and Exists)](#8-database-orm-validation-unique-and-exists)
-9. [16 Built-in Data Filters (Sanitizers)](#9-16-built-in-data-filters-sanitizers)
-10. [76 Built-in Validators](#10-76-built-in-validators)
-11. [Custom Validators and Custom Filters](#11-custom-validators-and-custom-filters)
-12. [Automated Testing](#12-automated-testing)
-13. [Publishing to Packagist](#13-publishing-to-packagist)
+9. [File Upload Validation and Normalization](#9-file-upload-validation-and-normalization)
+10. [17 Built-in Data Filters (Sanitizers)](#10-17-built-in-data-filters-sanitizers)
+11. [80+ Built-in Validators](#11-80-built-in-validators)
+12. [Custom Validators and Custom Filters](#12-custom-validators-and-custom-filters)
+13. [Automated Testing](#13-automated-testing)
+14. [Publishing to Packagist](#14-publishing-to-packagist)
 
 ---
 
@@ -98,7 +99,7 @@ The library provides **two clean, distinct execution paths** depending on your a
                  │                                                           ▼
          ┌───────┴───────┐                                     Returns Phalcon\Filter\Validation
          ▼               ▼                                                   │
-  4 C-Native Filters   76 PHP Rules                                ┌─────────┴─────────┐
+  4 C-Native Filters   81 PHP Rules                                ┌─────────┴─────────┐
   (trim, lower, upper, (Arr, Str, Wildcards,                       ▼                   ▼
    sanitize_email)     Fail-fast, i18n en/vi)              17 Native C Rules   59 Extended Rules
                                                           (PresenceOf, Email, (Bridged via Phalcon
@@ -107,7 +108,7 @@ The library provides **two clean, distinct execution paths** depending on your a
 
 ### Path 1: Standard Engine (`Validator::run()`, `PhalconValidation::run()`, `$this->validator`)
 This is the default path when calling `run()`, `validate()`, or using the DI service:
-- **Validation Engine:** Executes through `RuleEngine` across 76 PHP Rule classes. This path handles advanced capabilities that Phalcon's C-core does not natively provide:
+- **Validation Engine:** Executes through `RuleEngine` across 81 PHP Rule classes. This path handles advanced capabilities that Phalcon's C-core does not natively provide:
   - Multidimensional dot-notation resolution (`customer.profile.email`).
   - Wildcard array expansion (`items.*.price`, `order_items.*.qty`).
   - Fail-fast validation per field.
@@ -406,7 +407,52 @@ $rules = [
 
 ---
 
-## 9. 16 Built-in Data Filters (Sanitizers)
+## 9. File Upload Validation and Normalization
+
+Phalcon-Validation provides out-of-the-box support for single and multi-file uploads, combining the safety of Phalcon v5 with concise GUMP-like syntax:
+
+### 9.1. Five Specialized File Upload Validators
+- **`required_file`**: Ensures a file was uploaded successfully (`UPLOAD_ERR_OK`, file size > 0, non-empty filename).
+- **`extension,ext1;ext2`**: Validates file extension against allowed list (`pdf;docx;png;jpg`).
+- **`mimetype,type1;type2`**: Inspects real binary content on disk via `finfo_file` (prevents malicious file disguise, alias: `mime_type`).
+- **`max_file_size,limit`**: Limits maximum file size (supports human units like `2mb`, `500kb`, `1048576`).
+- **`min_file_size,limit`**: Enforces minimum file size (e.g. `10kb`, `1024`).
+
+### 9.2. Normalization Filter (`normalize_files`)
+PHP native `$_FILES` organizes multi-file inputs awkwardly (e.g. `$_FILES['photos']['name'][0]`). The **`normalize_files`** filter (alias: `normalize_file`) automatically transforms single/multi-file uploads or Phalcon `FileInterface` objects into a clean, sequential list of file arrays:
+
+```php
+$data = [
+    'title'  => '  My Vacation Photos  ',
+    'avatar' => $_FILES['avatar'], // Single native file
+    'photos' => $_FILES['photos'], // Multiple native files (<input name="photos[]" multiple>)
+];
+
+$rules = [
+    'title'  => 'required|min_len,3',
+    'avatar' => 'required_file|extension,png;jpg|mimetype,image/png;image/jpeg|max_file_size,2mb',
+    'photos' => 'required_file|extension,png;jpg|mimetype,image/png;image/jpeg|max_file_size,5mb',
+];
+
+$filters = [
+    'title'  => 'trim',
+    'photos' => 'normalize_files', // Transforms $_FILES['photos'] into clean array list
+];
+
+$result = PhalconValidation::run($data, $rules, $filters);
+```
+
+### 9.3. Polymorphic Input Support
+Every file validator automatically detects and validates:
+1. **Single File:** `['name' => 'photo.png', 'tmp_name' => '/tmp/xyz', 'size' => 1024, 'error' => 0]`
+2. **PHP Native Multi-File:** Raw `$_FILES` arrays with multi-key arrays.
+3. **Normalized Array List:** Sequential file arrays after `normalize_files` (or wildcard rules: `'photos.*' => 'extension,png;jpg'`).
+4. **Phalcon File Object:** Instances of `Phalcon\Http\Request\File`.
+5. **Path String:** Direct file path string on server disk.
+
+---
+
+## 10. 17 Built-in Data Filters (Sanitizers)
 
 | Filter | Description | Example |
 |---|---|---|
@@ -426,14 +472,15 @@ $rules = [
 | `htmlencode` | Convert HTML characters to HTML entities. | `'<b>"Hi"</b>'` -> `'&lt;b&gt;&quot;Hi&quot;&lt;/b&gt;'` |
 | `rmpunctuation` | Strip all punctuation characters from string. | `'Hello, World!'` -> `'Hello World'` |
 | `noise_words` | Strip stop-words/noise words from text. | `'the quick brown fox'` -> `'quick brown fox'` |
+| `normalize_files` | Normalize native PHP `$_FILES` (multi/single) into clean array list (alias: `normalize_file`). | `$_FILES['photos']` -> `[['name' => 'a.jpg', ...], ...]` |
 
 ---
 
-## 10. 76 Built-in Validators
+## 11. 80+ Built-in Validators
 
 ### 10.1. Presence
 - **`required`**: Field must be present and not empty (not `null`, `""`, `[]`).
-- **`required_file`**: File must be uploaded without errors (`UPLOAD_ERR_OK`).
+- **`required_file`**: File must be uploaded without errors (`UPLOAD_ERR_OK`). Intelligently adapts to single files, native PHP `$_FILES` multiple arrays, normalized file lists, and Phalcon File objects.
 
 ### 10.2. Strings & Length
 - **`min_len,n`**: Minimum string length.
@@ -531,11 +578,14 @@ $rules = [
 - **`valid_array_size_lesser,n`**: Array has at most `n` elements.
 
 ### 10.13. File Uploads
-- **`extension,ext1;ext2`**: Allowed file extensions (`pdf;docx;png`).
+- **`extension,ext1;ext2`**: Allowed file extensions (`pdf;docx;png`). Intelligently validates single files, native PHP `$_FILES` multiple arrays, normalized file lists, filename strings, and Phalcon File objects.
+- **`mimetype,type1;type2`**: Allowed MIME types (`image/png;image/jpeg;application/pdf`). Inspects real binary content via `finfo` when file exists on disk, with graceful fallback to header metadata (alias: `mime_type`).
+- **`max_file_size,limit`**: Maximum allowed file size (supports units like `2mb`, `500kb`, `1048576`).
+- **`min_file_size,limit`**: Minimum allowed file size (supports units like `10kb`, `1024`).
 
 ---
 
-## 11. Custom Validators and Custom Filters
+## 12. Custom Validators and Custom Filters
 
 ### Registering Custom Validators
 ```php
@@ -565,7 +615,7 @@ $filters = ['code' => 'prefix,ORDER_'];
 
 ---
 
-## 12. Automated Testing
+## 13. Automated Testing
 
 The library is thoroughly covered by an automated PHPUnit test suite comprising 54 tests and 152 assertions:
 
@@ -579,7 +629,7 @@ php vendor/bin/phpunit
 
 ---
 
-## 13. Publishing to Packagist
+## 14. Publishing to Packagist
 
 To distribute this library for composer installation:
 1. Push this repository to GitHub: `https://github.com/phatnt93/phalcon-validation`.

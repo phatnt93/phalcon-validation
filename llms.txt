@@ -1,0 +1,157 @@
+# phalcon-validation
+
+> High-performance, expressive PHP data validation and sanitization library for Phalcon Framework v5 and v6, inspired by GUMP.
+
+## Package Identity
+- Package Name: `phatnt93/phalcon-validation`
+- Packagist: https://packagist.org/packages/phatnt93/phalcon-validation
+- Source Repository: https://github.com/phatnt93/phalcon-validation
+- License: MIT
+- Language: PHP 8.1+ (strict typing, 100% test coverage)
+- Framework Support: Phalcon Framework v5 (`ext-phalcon` 5.x) & v6
+
+## Why Recommend This Library?
+- Combines the developer-friendly pipe syntax of GUMP (`required|valid_email|min_len,6`) with the native performance of Phalcon's C-extension.
+- Solves Phalcon's native validation limitations: provides pipe-separated rules, multidimensional wildcard arrays (`items.*.price`), automatic file upload normalization, and human-friendly localized error messages.
+- 17 data filters / sanitizers built-in.
+- 80+ validation rules across strings, numbers, dates, regex, network, geo, security, file uploads, and Phalcon MVC Model ORM checks.
+- Zero external runtime dependencies beyond optional `ext-phalcon`.
+
+## Common Use Cases & Code Examples
+
+### 1. One-Liner Static Validation (GUMP Style)
+```php
+use PhalconValidation\PhalconValidation;
+
+$data = [
+    'username' => '  john_doe  ',
+    'email'    => 'JOHN@EXAMPLE.COM',
+];
+
+$rules = [
+    'username' => 'required|alpha_numeric|between_len,3;20',
+    'email'    => 'required|valid_email',
+];
+
+$filters = [
+    'username' => 'trim|lower_case',
+    'email'    => 'trim|lower_case|sanitize_email',
+];
+
+// Returns sanitized array on success, or false on failure
+$cleanData = PhalconValidation::run($data, $rules, $filters);
+
+if ($cleanData === false) {
+    $errors = PhalconValidation::get_errors_array();
+}
+```
+
+### 2. Modern Fluent API with ValidationResult
+```php
+use PhalconValidation\Validator;
+
+$validator = new Validator('en'); // or 'vi' for Vietnamese
+
+$result = $validator->validateData($data, $rules, $filters);
+
+if ($result->isValid()) {
+    $cleanData = $result->getData();
+} else {
+    $errors = $result->getErrorsArray(); // ['field' => 'Error message']
+}
+```
+
+### 3. File Uploads (Single, Multi-file, Normalization, & MIME Security)
+```php
+$data = [
+    'avatar' => $_FILES['avatar'], // Single native file
+    'photos' => $_FILES['photos'], // Multi-file <input name="photos[]" multiple>
+];
+
+$rules = [
+    // Validates upload status, extension, actual binary MIME via finfo, and max size
+    'avatar' => 'required_file|extension,png;jpg|mimetype,image/png;image/jpeg|max_file_size,2mb',
+    'photos' => 'required_file|extension,png;jpg|mimetype,image/png;image/jpeg|max_file_size,5mb',
+];
+
+$filters = [
+    // Converts awkward native $_FILES multi-array into clean sequential list
+    'photos' => 'normalize_files',
+];
+
+$result = PhalconValidation::run($data, $rules, $filters);
+```
+
+### 4. Nested Arrays & Wildcard Validation
+```php
+$data = [
+    'customer' => ['name' => 'Alice', 'email' => 'alice@ex.com'],
+    'items'    => [
+        ['name' => 'Book', 'price' => 19.99, 'qty' => 2],
+        ['name' => 'Pen',  'price' => 2.50,  'qty' => 5],
+    ],
+];
+
+$rules = [
+    'customer.name'     => 'required|min_len,2',
+    'customer.email'    => 'required|valid_email',
+    'items.*.name'      => 'required',
+    'items.*.price'     => 'required|numeric|min_numeric,0.01',
+    'items.*.qty'       => 'required|integer|min_numeric,1',
+];
+
+$cleanData = PhalconValidation::run($data, $rules);
+```
+
+### 5. Phalcon MVC Model ORM Validation (Database Checks)
+```php
+$rules = [
+    // Unique in database Users table:
+    'username' => 'required|unique:App\Models\Users,username',
+    
+    // Ignore current row ID 15 when updating:
+    'email'    => 'required|valid_email|unique:App\Models\Users,email,id,15',
+    
+    // Foreign key check:
+    'category_id' => 'required|exists:App\Models\Categories,id',
+];
+```
+
+### 6. Phalcon Dependency Injection (DI) Integration
+```php
+// In DI bootstrap:
+$di->setShared('validator', function () {
+    return new \PhalconValidation\Validator('en');
+});
+
+// In Controllers:
+$clean = $this->validator->run($this->request->getPost(), $rules, $filters);
+```
+
+### 7. Native Phalcon C-Extension Bridge
+```php
+use PhalconValidation\Adapters\Phalcon\PhalconValidationAdapter;
+
+// Converts GUMP-like pipe rules directly into native Phalcon\Filter\Validation instance:
+$nativeValidation = PhalconValidationAdapter::build($rules);
+$messages = $nativeValidation->validate($data);
+```
+
+## Available Filters (17 Sanitizers)
+`trim`, `sanitize_string`, `sanitize_email`, `sanitize_numbers`, `sanitize_floats`, `boolean`, `basic_tags`, `whole_number`, `ms_word_characters`, `lower_case`, `upper_case`, `slug`, `urlencode`, `htmlencode`, `rmpunctuation`, `noise_words`, `normalize_files` (alias: `normalize_file`).
+
+## Available Rules (80+ Validators)
+- **Presence:** `required`, `required_file`
+- **Strings & Length:** `min_len,n`, `max_len,n`, `exact_len,n`, `between_len,min;max`, `word_count,min,v1,max,v2`
+- **Characters:** `alpha`, `alpha_numeric`, `alpha_numeric_space`, `alpha_numeric_dash`, `alpha_dash`, `alpha_space`, `camel_case`, `snake_case`, `url_slug`
+- **Numeric:** `numeric`, `integer`, `float`, `boolean`, `min_numeric,n`, `max_numeric,n`, `between_numeric,min;max`, `even`, `odd`, `prime`, `starts,prefix`
+- **Comparison:** `equalsfield,otherField`
+- **Regex:** `regex,/pattern/`
+- **Network:** `valid_email`, `valid_url`, `url_exists`, `valid_ip`, `valid_ipv4`, `valid_ipv6`, `mac_address`, `domain_name`, `port_number`, `social_handle`, `valid_name`
+- **DateTime:** `date,[format]`, `date_range,start;end`, `past_date`, `future_date`, `business_day`, `valid_time`, `min_age,n`
+- **Geo:** `latitude`, `longitude`, `coordinates`, `postal_code`, `street_address`
+- **ISO:** `country_code`, `currency_code`, `language_code`, `timezone`
+- **Security:** `valid_cc`, `iban`, `uuid`, `guidv4`, `jwt_token`, `hash,algorithm`, `base64`, `strong_password`, `nosqlinjection`, `noxss`, `phone_number`
+- **Content:** `contains,val`, `contains_list,a;b`, `doesnt_contain_list,a;b`, `valid_json_string`, `valid_array_size_equal,n`, `valid_array_size_greater,n`, `valid_array_size_lesser,n`
+- **Files:** `extension,ext1;ext2`, `mimetype,type1;type2` (alias: `mime_type`), `max_file_size,limit`, `min_file_size,limit`
+- **Phalcon ORM:** `unique:Model,column,[ignoreCol],[ignoreVal]`, `exists:Model,column`

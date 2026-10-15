@@ -109,6 +109,9 @@ use PhalconValidation\Rules\Content\ValidArraySizeLesserRule;
 
 // Files
 use PhalconValidation\Rules\Files\ExtensionRule;
+use PhalconValidation\Rules\Files\MimeTypeRule;
+use PhalconValidation\Rules\Files\MaxFileSizeRule;
+use PhalconValidation\Rules\Files\MinFileSizeRule;
 
 // Phalcon ORM Rules
 use PhalconValidation\Rules\Phalcon\UniqueModelRule;
@@ -235,6 +238,10 @@ class RuleRegistry implements RuleRegistryInterface
 
         // 13. Files (1)
         $this->register(new ExtensionRule());
+        $this->register(new MimeTypeRule('mimetype'));
+        $this->register(new MimeTypeRule('mime_type'));
+        $this->register(new MaxFileSizeRule());
+        $this->register(new MinFileSizeRule());
 
         // 14. Phalcon Database ORM Rules (2)
         $this->register(new UniqueModelRule());

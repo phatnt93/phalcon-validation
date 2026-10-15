@@ -13,6 +13,7 @@ use PhalconValidation\Filters\HtmlencodeFilter;
 use PhalconValidation\Filters\LowercaseFilter;
 use PhalconValidation\Filters\MsWordCharactersFilter;
 use PhalconValidation\Filters\NoiseWordsFilter;
+use PhalconValidation\Filters\NormalizeFilesFilter;
 use PhalconValidation\Filters\RmpunctuationFilter;
 use PhalconValidation\Filters\SanitizeEmailFilter;
 use PhalconValidation\Filters\SanitizeFloatsFilter;
@@ -40,7 +41,7 @@ class FilterRegistry implements FilterRegistryInterface
     }
 
     /**
-     * Register all 16 built-in filters.
+     * Register all built-in filters.
      */
     private function registerDefaults(): void
     {
@@ -60,6 +61,8 @@ class FilterRegistry implements FilterRegistryInterface
         $this->register(new HtmlencodeFilter());
         $this->register(new RmpunctuationFilter());
         $this->register(new NoiseWordsFilter());
+        $this->register(new NormalizeFilesFilter('normalize_files'));
+        $this->register(new NormalizeFilesFilter('normalize_file'));
     }
 
     public function register(FilterInterface $filter): self

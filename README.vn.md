@@ -2,7 +2,7 @@
 
 [📖 English Documentation](README.md)
 
-[![Latest Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/phatnt93/phalcon-validation)
+[![Latest Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/phatnt93/phalcon-validation)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-8892BF.svg)](https://php.net)
 [![Phalcon Support](https://img.shields.io/badge/phalcon-v5%20%7C%20v6-green.svg)](https://phalcon.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -25,11 +25,12 @@ Thư viện PHP Data Validation & Sanitization hiệu năng cao, cú pháp ngắ
 6. [Xử lý Mảng Lồng Nhau và Wildcard](#6-xử-lý-mảng-lồng-nhau-và-wildcard)
 7. [Tên Trường Thân Thiện và Đa Ngôn Ngữ](#7-tên-trường-thân-thiện-và-đa-ngôn-ngữ)
 8. [Kiểm Tra Database ORM (Unique và Exists)](#8-kiểm-tra-database-orm-unique-và-exists)
-9. [Bảng Tra Cứu 16 Bộ Lọc Dữ Liệu (Filters)](#9-bảng-tra-cứu-16-bộ-lọc-dữ-liệu-filters)
-10. [Bảng Tra Cứu 76 Bộ Kiểm Tra Hợp Lệ (Validators)](#10-bảng-tra-cứu-76-bộ-kiểm-tra-hợp-lệ-validators)
-11. [Tự Viết Custom Validator và Custom Filter](#11-tự-viết-custom-validator-và-custom-filter)
-12. [Kiểm thử tự động](#12-kiểm-thử-tự-động)
-13. [Hướng dẫn xuất bản lên Packagist](#13-hướng-dẫn-xuất-bản-lên-packagist)
+9. [Xác Thực và Chuẩn Hóa Tệp Tin Tải Lên (File Uploads)](#9-xác-thực-và-chuẩn-hóa-tệp-tin-tải-lên-file-uploads)
+10. [Bảng Tra Cứu 17 Bộ Lọc Dữ Liệu (Filters)](#10-bảng-tra-cứu-17-bộ-lọc-dữ-liệu-filters)
+11. [Bảng Tra Cứu 80+ Bộ Kiểm Tra Hợp Lệ (Validators)](#11-bảng-tra-cứu-80-bộ-kiểm-tra-hợp-lệ-validators)
+12. [Tự Viết Custom Validator và Custom Filter](#12-tự-viết-custom-validator-và-custom-filter)
+13. [Kiểm thử tự động](#13-kiểm-thử-tự-động)
+14. [Hướng dẫn xuất bản lên Packagist](#14-hướng-dẫn-xuất-bản-lên-packagist)
 
 ---
 
@@ -98,7 +99,7 @@ Thư viện cung cấp **2 luồng thực thi tách bạch rõ ràng** tùy theo
                  │                                                   ▼
          ┌───────┴───────┐                             Tạo Phalcon\Filter\Validation
          ▼               ▼                                           │
-  4 Filters C-Native   76 Rules PHP                      ┌───────────┴───────────┐
+  4 Filters C-Native   81 Rules PHP                      ┌───────────┴───────────┐
   (trim, lower, upper,  (Arr, Str, Wildcards,            ▼                       ▼
    sanitize_email)      Fail-fast, i18n vi/en)    17 Rules C Native       59 Rules Mở Rộng
                                                  (PresenceOf, Email,     (Bridge qua Phalcon
@@ -107,7 +108,7 @@ Thư viện cung cấp **2 luồng thực thi tách bạch rõ ràng** tùy theo
 
 ### Luồng 1: Standard Engine (`Validator::run()`, `PhalconValidation::run()`, `$this->validator`)
 Đây là luồng mặc định khi gọi `run()`, `validate()`, hoặc thông qua DI container:
-- **Xử lý Validation:** Thực thi qua `RuleEngine` với 76 classes Rule của thư viện. Luồng này chuyên trách xử lý các tính năng nâng cao mà Phalcon C-core không tích hợp sẵn:
+- **Xử lý Validation:** Thực thi qua `RuleEngine` với 81 classes Rule của thư viện. Luồng này chuyên trách xử lý các tính năng nâng cao mà Phalcon C-core không tích hợp sẵn:
   - Duyệt mảng đa chiều dot-notation (`customer.profile.email`).
   - Mở rộng wildcard tự động (`items.*.price`, `order_items.*.qty`).
   - Dừng kiểm tra ngay khi gặp lỗi đầu tiên của trường (fail-fast per field).
@@ -121,7 +122,7 @@ Luồng này **chỉ được kích hoạt khi bạn gọi rõ ràng** `PhalconV
 - **17 Rules được thực thi bằng class C-Validator native của Phalcon:**
   `required` (`PresenceOf`), `valid_email` (`Email`), `valid_url` (`Url`), `valid_ip`/`ipv4`/`ipv6` (`Ip`), `min_len`/`max_len`/`exact_len`/`between_len` (`StringLength`), `alpha` (`Alpha`), `alpha_numeric` (`Alnum`), `numeric` (`Numericality`), `integer` (`Digit`), `between_numeric` (`Between`), `equalsfield` (`Confirmation`), `contains` (`InclusionIn`), `doesnt_contain_list` (`ExclusionIn`), `date` (`Date`), `regex` (`Regex`), `required_file` (`File`).
 - **59 Rules mở rộng được bridge qua `Phalcon\Filter\Validation\Validator\Callback`:**
-  Các rule nâng cao như `strong_password`, `uuid`, `jwt_token`, `iban`, `even`, `odd`, `prime`, `word_count`, `valid_name`,... tự động được đóng gói vào Callback validator native của Phalcon. Nhờ đó, **không có bất kỳ rule nào bị drop âm thầm**, toàn bộ 76 rules đều được thực thi bảo mật và sinh thông báo lỗi chuẩn qua Translator.
+  Các rule nâng cao như `strong_password`, `uuid`, `jwt_token`, `iban`, `even`, `odd`, `prime`, `word_count`, `valid_name`,... tự động được đóng gói vào Callback validator native của Phalcon. Nhờ đó, **không có bất kỳ rule nào bị drop âm thầm**, toàn bộ 80+ rules đều được thực thi bảo mật và sinh thông báo lỗi chuẩn qua Translator.
 - **Bắt lỗi cấu hình:** Nếu rule không tồn tại trong hệ thống, adapter sẽ ném ngay ngoại lệ `RuleNotFoundException`.
 
 ---
@@ -407,7 +408,52 @@ $rules = [
 
 ---
 
-## 9. Bảng Tra Cứu 16 Bộ Lọc Dữ Liệu (Filters)
+## 9. Xác Thực và Chuẩn Hóa Tệp Tin Tải Lên (File Uploads)
+
+Thư viện tích hợp sẵn giải pháp toàn diện cho xử lý upload tệp tin, kết hợp chuẩn bảo mật của Phalcon v5 với cú pháp ngắn gọn kiểu GUMP:
+
+### 9.1. Bộ 5 Quy Tắc Xác Thực Tệp Tin Chuyên Biệt
+- **`required_file`**: Bắt buộc tệp phải được tải lên thành công (`UPLOAD_ERR_OK`, kích thước > 0, tên không rỗng).
+- **`extension,ext1;ext2`**: Kiểm tra đuôi mở rộng tệp tin hợp lệ (`pdf;docx;png;jpg`).
+- **`mimetype,type1;type2`**: Soi cấu trúc nhị phân thực tế của tệp qua `finfo_file` trên đĩa để chống giả mạo đuôi tệp (alias: `mime_type`).
+- **`max_file_size,limit`**: Giới hạn dung lượng tối đa cho phép (hỗ trợ các đơn vị `2mb`, `500kb`, `1048576`).
+- **`min_file_size,limit`**: Giới hạn dung lượng tối thiểu cho phép (hỗ trợ `10kb`, `1024`).
+
+### 9.2. Bộ Lọc Chuẩn Hóa Tệp Tin (`normalize_files`)
+Mặc định PHP tổ chức mảng `$_FILES` khi tải lên nhiều tệp (`name="photos[]" multiple`) theo cấu trúc phân tán thuộc tính rất bất tiện. Bộ lọc **`normalize_files`** (alias: `normalize_file`) tự động gộp và chuẩn hóa thành danh sách mảng tệp tin tuần tự chuẩn:
+
+```php
+$data = [
+    'title'  => '  Album Ảnh Kỳ Nghỉ  ',
+    'avatar' => $_FILES['avatar'], // Tệp đơn native
+    'photos' => $_FILES['photos'], // Nhiều tệp native (<input name="photos[]" multiple>)
+];
+
+$rules = [
+    'title'  => 'required|min_len,3',
+    'avatar' => 'required_file|extension,png;jpg|mimetype,image/png;image/jpeg|max_file_size,2mb',
+    'photos' => 'required_file|extension,png;jpg|mimetype,image/png;image/jpeg|max_file_size,5mb',
+];
+
+$filters = [
+    'title'  => 'trim',
+    'photos' => 'normalize_files', // Chuẩn hóa $_FILES['photos'] thành danh sách mảng sạch
+];
+
+$result = PhalconValidation::run($data, $rules, $filters);
+```
+
+### 9.3. Hỗ Trợ Đa Hình Cấu Trúc Dữ Liệu
+Mọi rule kiểm tra tệp tin đều tự động phân tích và tương thích thông minh với:
+1. **Tệp đơn:** `['name' => 'photo.png', 'tmp_name' => '/tmp/xyz', 'size' => 1024, 'error' => 0]`
+2. **Mảng nhiều tệp native PHP:** Cấu trúc raw `$_FILES` chưa qua filter.
+3. **Mảng danh sách đã chuẩn hóa:** Danh sách sau khi qua `normalize_files` (hoặc rule wildcard: `'photos.*' => 'extension,png;jpg'`).
+4. **Đối tượng Phalcon File:** Các instance của `Phalcon\Http\Request\File`.
+5. **Chuỗi đường dẫn tệp:** Đường dẫn tệp tin thực tế trên ổ đĩa máy chủ.
+
+---
+
+## 10. Bảng Tra Cứu 17 Bộ Lọc Dữ Liệu (Filters)
 
 | Tên Filter | Mô tả hành vi | Ví dụ |
 |---|---|---|
@@ -427,14 +473,15 @@ $rules = [
 | `htmlencode` | Chuyển ký tự HTML sang HTML entities. | `'<b>"Hi"</b>'` -> `'&lt;b&gt;&quot;Hi&quot;&lt;/b&gt;'` |
 | `rmpunctuation` | Loại bỏ toàn bộ các dấu câu khỏi chuỗi. | `'Hello, World!'` -> `'Hello World'` |
 | `noise_words` | Loại bỏ các từ dừng (stop-words/noise words). | `'the quick brown fox'` -> `'quick brown fox'` |
+| `normalize_files` | Chuẩn hóa mảng upload `$_FILES` native của PHP (nhiều file hoặc đơn file) thành mảng danh sách file chuẩn (alias: `normalize_file`). | `$_FILES['photos']` -> `[['name' => 'a.jpg', ...], ...]` |
 
 ---
 
-## 10. Bảng Tra Cứu 76 Bộ Kiểm Tra Hợp Lệ (Validators)
+## 11. Bảng Tra Cứu 80+ Bộ Kiểm Tra Hợp Lệ (Validators)
 
 ### 10.1. Nhóm Bắt buộc & Hiện diện
 - **`required`**: Giá trị bắt buộc phải có mặt và không rỗng (khác `null`, `""`, `[]`).
-- **`required_file`**: Tệp tin bắt buộc phải tải lên không có mã lỗi `UPLOAD_ERR_OK`.
+- **`required_file`**: Tệp tin bắt buộc phải tải lên không có mã lỗi (`UPLOAD_ERR_OK`). Tự động nhận diện linh hoạt file đơn, mảng native PHP `$_FILES`, danh sách mảng file đã chuẩn hóa và đối tượng Phalcon File.
 
 ### 10.2. Nhóm Chuỗi & Độ dài
 - **`min_len,n`**: Độ dài chuỗi tối thiểu `n` ký tự.
@@ -532,11 +579,14 @@ $rules = [
 - **`valid_array_size_lesser,n`**: Mảng có tối đa `n` phần tử.
 
 ### 10.13. Nhóm Tệp tin Tải lên
-- **`extension,ext1;ext2`**: Phần mở rộng tệp tin hợp lệ (`pdf;docx;png`).
+- **`extension,ext1;ext2`**: Phần mở rộng tệp tin hợp lệ (`pdf;docx;png`). Tự động nhận diện linh hoạt chuỗi tên file, file đơn, mảng native PHP `$_FILES`, danh sách mảng file đã chuẩn hóa và đối tượng Phalcon File.
+- **`mimetype,type1;type2`**: Định dạng MIME type hợp lệ (`image/png;image/jpeg;application/pdf`). Kiểm tra cấu trúc nhị phân thực tế qua `finfo` khi tệp tồn tại trên đĩa, tự động fallback về header metadata (alias: `mime_type`).
+- **`max_file_size,limit`**: Dung lượng tệp tin tối đa cho phép (hỗ trợ các đơn vị `2mb`, `500kb`, `1048576`).
+- **`min_file_size,limit`**: Dung lượng tệp tin tối thiểu cho phép (hỗ trợ các đơn vị `10kb`, `1024`).
 
 ---
 
-## 11. Tự Viết Custom Validator và Custom Filter
+## 12. Tự Viết Custom Validator và Custom Filter
 
 ### Thêm Custom Validator
 ```php
