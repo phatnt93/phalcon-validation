@@ -58,7 +58,9 @@ class Validator
     {
         $this->ruleRegistry = self::getGlobalRuleRegistry();
         $this->filterRegistry = self::getGlobalFilterRegistry();
-        $this->translator = new Translator($lang);
+        // Inherit field names and messages registered through the static GUMP setters
+        $global = self::getGlobalTranslator();
+        $this->translator = new Translator($lang, $global instanceof Translator ? $global : null);
         $this->engine = new ValidationEngine($this->ruleRegistry, $this->filterRegistry, $this->translator);
         $this->lastErrors = new MessageBag();
     }

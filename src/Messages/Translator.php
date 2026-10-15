@@ -44,9 +44,11 @@ class Translator implements TranslatorInterface
     private array $customMessages = [];
 
     /**
+     * @param Translator|null $parent Shared translator whose field names and custom messages apply
+     *                                 unless overridden on this instance (used for the static GUMP setters).
      * @throws InvalidLocaleException When the locale code is malformed.
      */
-    public function __construct(string $locale = self::DEFAULT_LOCALE)
+    public function __construct(string $locale = self::DEFAULT_LOCALE, private ?Translator $parent = null)
     {
         $this->loadLocale(self::DEFAULT_LOCALE);
         $this->setLocale($locale);
@@ -87,14 +89,15 @@ class Translator implements TranslatorInterface
 
     public function getFieldName(string $field): string
     {
-        if (isset($this->fieldNames[$field])) {
-            return $this->fieldNames[$field];
+        $fieldNames = $this->resolvedFieldNames();
+        if (isset($fieldNames[$field])) {
+            return $fieldNames[$field];
         }
 
         // For nested fields like 'items.0.price', check if there's a wildcard alias 'items.*.price'
         $wildcardPattern = (string) preg_replace('/\.\d+\./', '.*.', $field);
-        if (isset($this->fieldNames[$wildcardPattern])) {
-            return $this->fieldNames[$wildcardPattern];
+        if (isset($fieldNames[$wildcardPattern])) {
+            return $fieldNames[$wildcardPattern];
         }
 
         return Str::humanize($field);
@@ -149,13 +152,48 @@ class Translator implements TranslatorInterface
     }
 
     /**
+     * Field aliases of this instance merged over those of the parent translator.
+     *
+     * @return array<string, string>
+     */
+    private function resolvedFieldNames(): array
+    {
+        return $this->parent === null
+            ? $this->fieldNames
+            : $this->fieldNames + $this->parent->resolvedFieldNames();
+    }
+
+    /**
+     * Custom messages of this instance merged over those of the parent translator.
+     *
+     * @return array<string, string|array<string, string>>
+     */
+    private function resolvedCustomMessages(): array
+    {
+        if ($this->parent === null) {
+            return $this->customMessages;
+        }
+
+        $merged = $this->parent->resolvedCustomMessages();
+        foreach ($this->customMessages as $key => $message) {
+            $inherited = $merged[$key] ?? null;
+            // Field-specific maps are merged rule by rule so both levels can contribute
+            $merged[$key] = is_array($message) && is_array($inherited) ? $message + $inherited : $message;
+        }
+
+        return $merged;
+    }
+
+    /**
      * Resolve the raw template by searching custom messages, current locale and fallback locale.
      */
     private function resolveTemplate(string $rule, ?string $field, ?string $default): string
     {
+        $customMessages = $this->resolvedCustomMessages();
+
         // 1. Check field-specific custom message: 'user.email' => ['required' => '...']
-        if ($field !== null && isset($this->customMessages[$field])) {
-            $fieldMsgs = $this->customMessages[$field];
+        if ($field !== null && isset($customMessages[$field])) {
+            $fieldMsgs = $customMessages[$field];
             if (is_array($fieldMsgs) && isset($fieldMsgs[$rule])) {
                 return $fieldMsgs[$rule];
             }
@@ -165,16 +203,16 @@ class Translator implements TranslatorInterface
         }
 
         // Check dot-syntax custom message: 'user.email.required' => '...'
-        if ($field !== null && isset($this->customMessages[$field . '.' . $rule])) {
-            $dotMsg = $this->customMessages[$field . '.' . $rule];
+        if ($field !== null && isset($customMessages[$field . '.' . $rule])) {
+            $dotMsg = $customMessages[$field . '.' . $rule];
             if (is_string($dotMsg)) {
                 return $dotMsg;
             }
         }
 
         // 2. Check general custom message for rule: 'required' => '...'
-        if (isset($this->customMessages[$rule]) && is_string($this->customMessages[$rule])) {
-            return $this->customMessages[$rule];
+        if (isset($customMessages[$rule]) && is_string($customMessages[$rule])) {
+            return $customMessages[$rule];
         }
 
         // 3. Check current locale dictionary
