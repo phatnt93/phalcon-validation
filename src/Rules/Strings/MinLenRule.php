@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace PhalconValidation\Rules\Strings;
+
+use PhalconValidation\Rules\AbstractRule;
+use PhalconValidation\Support\Str;
+
+/**
+ * Validates that string length is at least the given minimum.
+ */
+class MinLenRule extends AbstractRule
+{
+    protected string $name = 'min_len';
+    protected string $defaultMessage = 'The {field} field must be at least {param:0} characters in length.';
+
+    public function validate(string $field, mixed $value, array $params, array $data): bool
+    {
+        $min = (int)($params[0] ?? 0);
+        return Str::length((string)$value) >= $min;
+    }
+}
