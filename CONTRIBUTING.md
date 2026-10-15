@@ -34,7 +34,7 @@ All four must pass; CI runs the same commands on PHP 8.1 – 8.4 with both lowes
 ## Translations (i18n)
 
 - `en` is the default locale and the source of truth; `vi` is the second shipped locale.
-- User-facing messages live in `src/I18n/{locale}.php` as `rule => template` arrays. Never hardcode them in rule classes.
+- User-facing messages live in `src/I18n/{locale}.php` as `rule => template` arrays. A rule's `$defaultMessage` is only an English fallback for keys missing from every dictionary; always add the real message to the locale files and never build user-facing text anywhere else in a rule class.
 - Every locale must have exactly the same keys and placeholders (`{field}`, `{param}`, `{param:0}`...) as `en.php`. `tests/Unit/I18n/LocaleParityTest.php` enforces this.
 - Exception messages, PHPDoc, comments and commit messages are written in English only.
 - When you change `README.md`, update `README.vi.md` in the same pull request.

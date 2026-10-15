@@ -23,6 +23,7 @@ A fast, flexible, expressive, and human-friendly PHP Data Validation and Sanitiz
    - [Method 2: Instance Fluent API (GUMP Style)](#method-2-instance-fluent-api-gump-style)
    - [Method 3: Phalcon Controller Integration via DI Container](#method-3-phalcon-controller-integration-via-di-container)
    - [Method 4: Building a Native Phalcon Validation Object](#method-4-building-a-native-phalcon-validation-object)
+   - [Method 5: Rich Result Object (`validateData()` / `PhalconValidation::check()`)](#method-5-rich-result-object-validatedata--phalconvalidationcheck)
 6. [Nested Arrays and Wildcards](#6-nested-arrays-and-wildcards)
 7. [Field Aliases and Multi-Language Localization](#7-field-aliases-and-multi-language-localization)
 8. [Database ORM Validation (Unique and Exists)](#8-database-orm-validation-unique-and-exists)
@@ -137,7 +138,7 @@ This path is **only activated when explicitly invoked** via `PhalconValidationAd
 ## 3. System Requirements
 
 - **PHP Compatibility Targets:** PHP `>= 8.1` (compatible with PHP 8.1, 8.2, 8.3, and 8.4).
-- **Actively Tested Environment:** PHP `8.3.6` (CLI NTS x64) with Phalcon Extension `5.8.0` (100% of the 54 automated test suites passing).
+- **Actively Tested Environment:** PHP `8.3.6` (CLI NTS x64) with Phalcon Extension `5.8.0` (the full PHPUnit suite passes; CI also runs PHP 8.1–8.4 with a 90% line coverage gate).
 - **Phalcon Framework Target:** `ext-phalcon: ^5.0 || ^6.0` (optional for stand-alone mode, recommended for native C acceleration and DI integration).
 - **Required PHP Extensions:** `mbstring` (multibyte UTF-8 string handling).
 ---
@@ -321,6 +322,28 @@ if (count($messages) > 0) {
 }
 ```
 
+### Method 5: Rich Result Object (`validateData()` / `PhalconValidation::check()`)
+
+When you need the sanitized data and the errors at the same time, use `validateData()` on an instance (`PhalconValidation::create($lang)` returns a new `Validator`) or the static `PhalconValidation::check()`. Both return a `ValidationResult`:
+
+```php
+use PhalconValidation\PhalconValidation;
+
+$result = PhalconValidation::check(
+    ['email' => ' A@B.COM ', 'age' => 'x'],
+    ['email' => 'required|valid_email', 'age' => 'integer'],
+    ['email' => 'trim|lower_case'],
+);
+// Same as: PhalconValidation::create('en')->validateData($data, $rules, $filters);
+
+$result->isValid();         // false
+$result->getData();         // filtered data, returned even when validation fails
+$result['email'];           // 'a@b.com' (ValidationResult implements ArrayAccess)
+$result->getErrorsArray();  // ['age' => 'The Age field must be an integer.']
+$result->getErrors();       // [['field' => 'age', 'rule' => 'integer', 'message' => '...', 'params' => []]]
+$result->getReadableErrors(); // list of messages (pass true for HTML)
+```
+
 ---
 
 ## 6. Nested Arrays and Wildcards
@@ -354,6 +377,9 @@ $filters = [
 
 $clean = PhalconValidation::run($data, $rules, $filters);
 ```
+
+### Array and Object Values
+Rules that expect a string or number fail (they never throw or raise warnings) when the field holds an array or object, for example `min_len,3` with `tags[]=x`. Validate list items with wildcards (`tags.*`) instead. An empty array counts as an empty value, so non-presence rules skip it and `required` fails.
 
 ---
 
@@ -402,6 +428,19 @@ $validator->set_fields_error_messages([
         'valid_email' => 'The provided email is not valid.',
     ],
 ]);
+```
+
+### 7.4. Global Aliases and Messages (GUMP Static Setters)
+The GUMP-style static setters configure every `Validator` instance, `Validator::is_valid()` and `PhalconValidationAdapter::build()`. Instance settings (`setFieldNames()`, `set_fields_error_messages()`) take precedence.
+
+```php
+Validator::set_field_name('age', 'Your age');
+Validator::set_field_names(['email' => 'Email address']);
+Validator::set_error_message('integer', '{field} must be a whole number.');
+Validator::set_error_messages(['required' => '{field} cannot be empty.']);
+
+Validator::is_valid(['age' => 'x'], ['age' => 'integer']);
+// ['Your age must be a whole number.']
 ```
 
 ---
@@ -672,7 +711,7 @@ This package ships `llms.txt` and `llms-full.txt` for AI assistants. Add this sn
 
 To distribute this library for composer installation:
 1. Push this repository to GitHub: `https://github.com/phatnt93/phalcon-validation`.
-2. Tag a release version: `git tag v1.0.0 && git push origin v1.0.0`.
+2. Tag a release version: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 3. Submit the repository URL to [Packagist.org](https://packagist.org/packages/submit).
 4. Users can now install it anywhere: `composer require phatnt93/phalcon-validation`.
 

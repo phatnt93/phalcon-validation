@@ -23,6 +23,7 @@ Thư viện PHP Data Validation & Sanitization hiệu năng cao, cú pháp ngắ
    - [Cách 2: Instance Fluent API chuẩn phong cách GUMP](#cách-2-instance-fluent-api-chuẩn-phong-cách-gump)
    - [Cách 3: Tích hợp vào Phalcon Controller qua DI Container](#cách-3-tích-hợp-vào-phalcon-controller-qua-di-container)
    - [Cách 4: Chuyển đổi sang Phalcon Native Validation Object](#cách-4-chuyển-đổi-sang-phalcon-native-validation-object)
+   - [Cách 5: Đối tượng kết quả đầy đủ (`validateData()` / `PhalconValidation::check()`)](#cách-5-đối-tượng-kết-quả-đầy-đủ-validatedata--phalconvalidationcheck)
 6. [Xử lý Mảng Lồng Nhau và Wildcard](#6-xử-lý-mảng-lồng-nhau-và-wildcard)
 7. [Tên Trường Thân Thiện và Đa Ngôn Ngữ](#7-tên-trường-thân-thiện-và-đa-ngôn-ngữ)
 8. [Kiểm Tra Database ORM (Unique và Exists)](#8-kiểm-tra-database-orm-unique-và-exists)
@@ -137,7 +138,7 @@ Luồng này **chỉ được kích hoạt khi bạn gọi rõ ràng** `PhalconV
 ## 3. Yêu Cầu Hệ Thống
 
 - **Mục tiêu tương thích PHP:** PHP `>= 8.1` (tương thích hoàn toàn với PHP 8.1, 8.2, 8.3 và 8.4).
-- **Môi trường đã kiểm thử tự động thực tế:** PHP `8.3.6` (CLI NTS x64) cùng Phalcon Extension `5.8.0` (100% test suite gồm 54 bài test đều pass).
+- **Môi trường đã kiểm thử tự động thực tế:** PHP `8.3.6` (CLI NTS x64) cùng Phalcon Extension `5.8.0` (toàn bộ test PHPUnit đều pass; CI chạy thêm PHP 8.1–8.4 với ngưỡng line coverage 90%).
 - **Phalcon Framework mục tiêu:** `ext-phalcon: ^5.0 || ^6.0` (tùy chọn khi chạy stand-alone, khuyến nghị cài đặt để tận dụng native C và Phalcon DI).
 - **Extension PHP bổ trợ bắt buộc:** `mbstring` (xử lý chuỗi Unicode UTF-8 đa byte).
 ---
@@ -321,6 +322,28 @@ if (count($messages) > 0) {
 }
 ```
 
+### Cách 5: Đối tượng kết quả đầy đủ (`validateData()` / `PhalconValidation::check()`)
+
+Khi cần lấy cùng lúc dữ liệu đã lọc và danh sách lỗi, dùng `validateData()` trên instance (`PhalconValidation::create($lang)` trả về một `Validator` mới) hoặc hàm tĩnh `PhalconValidation::check()`. Cả hai đều trả về `ValidationResult`:
+
+```php
+use PhalconValidation\PhalconValidation;
+
+$result = PhalconValidation::check(
+    ['email' => ' A@B.COM ', 'age' => 'x'],
+    ['email' => 'required|valid_email', 'age' => 'integer'],
+    ['email' => 'trim|lower_case'],
+);
+// Tương đương: PhalconValidation::create('en')->validateData($data, $rules, $filters);
+
+$result->isValid();         // false
+$result->getData();         // dữ liệu đã lọc, vẫn trả về kể cả khi validate thất bại
+$result['email'];           // 'a@b.com' (ValidationResult implement ArrayAccess)
+$result->getErrorsArray();  // ['age' => 'The Age field must be an integer.']
+$result->getErrors();       // [['field' => 'age', 'rule' => 'integer', 'message' => '...', 'params' => []]]
+$result->getReadableErrors(); // danh sách thông báo (truyền true để lấy HTML)
+```
+
 ---
 
 ## 6. Xử Lý Mảng Lồng Nhau và Wildcard
@@ -354,6 +377,9 @@ $filters = [
 
 $clean = PhalconValidation::run($data, $rules, $filters);
 ```
+
+### Giá trị là mảng hoặc object
+Các rule kiểu chuỗi/số sẽ báo không hợp lệ (không ném exception, không phát warning) khi field chứa mảng hoặc object, ví dụ `min_len,3` với `tags[]=x`. Hãy kiểm tra từng phần tử bằng wildcard (`tags.*`). Mảng rỗng được coi là giá trị rỗng: các rule không phải presence bỏ qua nó, còn `required` báo lỗi.
 
 ---
 
@@ -402,6 +428,19 @@ $validator->set_fields_error_messages([
         'valid_email' => 'Địa chỉ email này không hợp lệ.',
     ],
 ]);
+```
+
+### 7.4. Alias và thông báo toàn cục (setter tĩnh kiểu GUMP)
+Các setter tĩnh kiểu GUMP áp dụng cho mọi instance `Validator`, cho `Validator::is_valid()` và `PhalconValidationAdapter::build()`. Cấu hình ở instance (`setFieldNames()`, `set_fields_error_messages()`) được ưu tiên hơn.
+
+```php
+Validator::set_field_name('age', 'Tuổi của bạn');
+Validator::set_field_names(['email' => 'Địa chỉ email']);
+Validator::set_error_message('integer', '{field} phải là số nguyên.');
+Validator::set_error_messages(['required' => '{field} không được để trống.']);
+
+Validator::is_valid(['age' => 'x'], ['age' => 'integer']);
+// ['Tuổi của bạn phải là số nguyên.']
 ```
 
 ---
@@ -672,7 +711,7 @@ Package có sẵn `llms.txt` và `llms-full.txt` dành cho trợ lý AI. Thêm �
 
 Để phân phối thư viện này cho cộng đồng cài đặt qua Composer:
 1. Đẩy mã nguồn lên GitHub: `https://github.com/phatnt93/phalcon-validation`.
-2. Tạo release tag: `git tag v1.0.0 && git push origin v1.0.0`.
+2. Tạo release tag: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 3. Đăng nhập [Packagist.org](https://packagist.org/packages/submit) và submit URL repo.
 4. Bất kỳ ai cũng có thể tải về qua lệnh: `composer require phatnt93/phalcon-validation`.
 

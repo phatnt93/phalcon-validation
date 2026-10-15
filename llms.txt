@@ -141,6 +141,22 @@ use PhalconValidation\Adapters\Phalcon\PhalconValidationAdapter;
 // Converts GUMP-like pipe rules directly into native Phalcon\Filter\Validation instance:
 $nativeValidation = PhalconValidationAdapter::build($rules);
 $messages = $nativeValidation->validate($data);
+// Pass/fail matches Validator::is_valid(); unlike run() it is not fail-fast (several messages per field possible).
+```
+
+### 8. Localization (en, vi, custom locales)
+```php
+$validator = new \PhalconValidation\Validator('vi');
+$validator->setLocale('vi_VN');                 // regional codes fall back to the base language
+$validator->addTranslations('fr', ['required' => 'Le champ {field} est obligatoire.']);
+$validator->setLocale('fr');
+
+// Malformed locale codes (e.g. '../en') throw \PhalconValidation\Exceptions\InvalidLocaleException.
+// Unknown but well-formed locales and missing keys fall back to 'en'.
+
+// Global GUMP-style setters apply to every instance, is_valid() and the native adapter:
+\PhalconValidation\Validator::set_field_name('age', 'Your age');
+\PhalconValidation\Validator::set_error_message('integer', '{field} must be a whole number.');
 ```
 
 ## Available Filters (17 Sanitizers)

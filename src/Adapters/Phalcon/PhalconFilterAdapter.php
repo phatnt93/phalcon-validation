@@ -38,6 +38,12 @@ class PhalconFilterAdapter
 
     /**
      * Map rule name to native Phalcon filter sanitizer name.
+     *
+     * Reference map only: the filter engine does not use it. Only trim, lower_case, upper_case and sanitize_email
+     * delegate to Phalcon (inside their own filter classes); the other mapped sanitizers behave differently from the
+     * library filters of the same name.
+     *
+     * @internal
      */
     public static function mapFilterName(string $name): ?string
     {

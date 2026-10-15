@@ -164,7 +164,7 @@ Every file validator accepts:
 - `word_count,min,v1,max,v2`: Word count within specified range.
 
 ### 5.3. Characters & Formatting
-- `alpha`: Letters only (Phalcon native C).
+- `alpha`: Letters only (Unicode; native `Alpha` in `PhalconValidationAdapter::build()`).
 - `alpha_numeric`: Letters (Unicode) and digits only.
 - `alpha_numeric_space`: Letters, digits, and spaces.
 - `alpha_numeric_dash`: Letters, digits, dashes, and underscores.
@@ -192,10 +192,10 @@ Every file validator accepts:
 - `regex,/pattern/`: Matches regular expression (`preg_match`).
 
 ### 5.6. Network & Web
-- `valid_email`: RFC-compliant email address (Phalcon native C).
-- `valid_url`: Valid URL format (Phalcon native C).
+- `valid_email`: RFC-compliant email address (native C validator in `PhalconValidationAdapter::build()`).
+- `valid_url`: Valid URL format (native C validator in `PhalconValidationAdapter::build()`).
 - `url_exists,[allow_private]`: http(s) URL answers a HEAD request with 2xx/3xx (no redirects, 5 s timeout). Hosts resolving to private/reserved IPs are rejected unless `allow_private` is given (SSRF protection). Sends a network request per value.
-- `valid_ip`: Valid IP address (Phalcon native C).
+- `valid_ip`: Valid IP address (native C validator in `PhalconValidationAdapter::build()`).
 - `valid_ipv4`: Valid IPv4 address.
 - `valid_ipv6`: Valid IPv6 address.
 - `mac_address`: Valid MAC address.
