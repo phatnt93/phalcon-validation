@@ -17,6 +17,14 @@ use PhalconValidation\Validator;
 
 class PhalconIntegrationTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        if (!extension_loaded('phalcon')) {
+            $this->markTestSkipped('Phalcon extension is not loaded in this environment.');
+        }
+    }
+
     public function testValidationServiceProviderRegistersInPhalconDi(): void
     {
         $di = new FactoryDefault();
