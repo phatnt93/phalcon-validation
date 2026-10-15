@@ -13,6 +13,10 @@ class WholeNumberFilter extends AbstractFilter
 
     public function filter(mixed $value, array $params = []): int
     {
+        if ($value !== null && !is_scalar($value)) {
+            return 0;
+        }
+
         return intval($value);
     }
 }

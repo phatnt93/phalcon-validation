@@ -17,6 +17,10 @@ class BetweenLenRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
+        if (!$this->isStringable($value)) {
+            return false;
+        }
+
         $min = (int) ($params[0] ?? 0);
         $max = (int) ($params[1] ?? PHP_INT_MAX);
         $len = Str::length((string) $value);

@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.github/copilot-instructions.md` and Cursor rules now point to `AGENTS.md`; the legacy `.cursorrules` file was replaced by `.cursor/rules/library.mdc`.
 - `composer.json`: `php` constraint simplified to `^8.1`; removed `optimize-autoloader` (no effect for libraries).
 
+### Fixed
+- String-based rules (`min_len`, `max_len`, `exact_len`, `between_len`, `word_count`, `starts`, `date_range`, `future_date`, `past_date`, `business_day`, `min_age`, `valid_cc`, `iban`, `contains`, `contains_list`, `doesnt_contain_list`) now fail on array/object input instead of raising PHP warnings or `Error`s. Previously an array was cast to the string `"Array"`, so e.g. `min_len,3` passed for `field[]=x`.
+- `sanitize_numbers` and `sanitize_floats` return non-scalar input unchanged and `whole_number` returns `0` for arrays/objects instead of raising errors.
+
 ### Security
 - Malformed locale codes (e.g. `../../etc/passwd`) now throw `InvalidLocaleException`, and only shipped locales are loaded from disk. Previously the locale string was concatenated into a `require` path.
 

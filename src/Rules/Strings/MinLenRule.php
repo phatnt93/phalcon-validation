@@ -17,6 +17,10 @@ class MinLenRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
+        if (!$this->isStringable($value)) {
+            return false;
+        }
+
         $min = (int) ($params[0] ?? 0);
         return Str::length((string) $value) >= $min;
     }

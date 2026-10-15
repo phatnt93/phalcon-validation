@@ -16,6 +16,10 @@ class IbanRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
+        if (!$this->isStringable($value)) {
+            return false;
+        }
+
         $iban = strtoupper(str_replace(' ', '', (string) $value));
         if (!preg_match('/^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}$/', $iban)) {
             return false;

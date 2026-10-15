@@ -38,4 +38,12 @@ abstract class AbstractRule implements RuleInterface
     {
         return $value === null || $value === '' || (is_array($value) && empty($value));
     }
+
+    /**
+     * Helper to check if a value can be safely cast to string (null, scalar or Stringable).
+     */
+    protected function isStringable(mixed $value): bool
+    {
+        return $value === null || is_scalar($value) || $value instanceof \Stringable;
+    }
 }

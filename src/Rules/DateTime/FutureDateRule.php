@@ -16,6 +16,10 @@ class FutureDateRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
+        if (!$this->isStringable($value)) {
+            return false;
+        }
+
         $timestamp = strtotime((string) $value);
         if ($timestamp === false) {
             return false;

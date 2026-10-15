@@ -13,8 +13,8 @@ class SanitizeNumbersFilter extends AbstractFilter
 
     public function filter(mixed $value, array $params = []): mixed
     {
-        if ($value === null) {
-            return null;
+        if (!is_scalar($value) && !$value instanceof \Stringable) {
+            return $value;
         }
 
         return (string) preg_replace('/[^0-9+-]/', '', (string) $value);

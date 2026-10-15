@@ -17,6 +17,10 @@ class MaxLenRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
+        if (!$this->isStringable($value)) {
+            return false;
+        }
+
         $max = (int) ($params[0] ?? PHP_INT_MAX);
         return Str::length((string) $value) <= $max;
     }

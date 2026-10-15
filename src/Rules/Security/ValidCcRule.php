@@ -16,6 +16,10 @@ class ValidCcRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
+        if (!$this->isStringable($value)) {
+            return false;
+        }
+
         $number = (string) preg_replace('/\D/', '', (string) $value);
         $numDigits = strlen($number);
         if ($numDigits < 13 || $numDigits > 19) {

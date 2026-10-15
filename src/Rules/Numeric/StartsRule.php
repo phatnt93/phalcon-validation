@@ -17,6 +17,10 @@ class StartsRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
+        if (!$this->isStringable($value)) {
+            return false;
+        }
+
         $prefix = (string) ($params[0] ?? '');
         return Str::startsWith((string) $value, $prefix);
     }

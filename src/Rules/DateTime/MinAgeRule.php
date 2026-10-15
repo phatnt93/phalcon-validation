@@ -17,6 +17,10 @@ class MinAgeRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
+        if (!$this->isStringable($value)) {
+            return false;
+        }
+
         $minAge = (int) ($params[0] ?? 0);
         $birthDate = DateTime::createFromFormat('Y-m-d', (string) $value);
 
