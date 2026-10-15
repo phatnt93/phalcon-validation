@@ -127,10 +127,10 @@ This path is **only activated when explicitly invoked** via `PhalconValidationAd
 
 ## 3. System Requirements
 
-- **PHP:** `>= 8.1` (tested on PHP 8.1, 8.2, 8.3, and 8.4)
-- **Phalcon Extension:** `ext-phalcon: ^5.0 || ^6.0` (recommended for native C acceleration)
-- **Extensions:** `mbstring` (UTF-8 string handling)
-
+- **PHP Compatibility Targets:** PHP `>= 8.1` (compatible with PHP 8.1, 8.2, 8.3, and 8.4).
+- **Actively Tested Environment:** PHP `8.3.6` (CLI NTS x64) with Phalcon Extension `5.8.0` (100% of the 54 automated test suites passing).
+- **Phalcon Framework Target:** `ext-phalcon: ^5.0 || ^6.0` (optional for stand-alone mode, recommended for native C acceleration and DI integration).
+- **Required PHP Extensions:** `mbstring` (multibyte UTF-8 string handling).
 ---
 
 ## 4. Installation

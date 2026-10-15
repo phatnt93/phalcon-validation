@@ -75,7 +75,7 @@ class PhalconValidation
         array $rules,
         array $customMessages = [],
         string $lang = 'en'
-    ): true|array {
+    ): bool|array {
         $validator = new Validator($lang);
         if (!empty($customMessages)) {
             $validator->set_fields_error_messages($customMessages);

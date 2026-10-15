@@ -155,7 +155,7 @@ class Validator
      * @param array<string, mixed> $ruleset
      * @return true|array<string, string> Returns true if valid, or array of errors
      */
-    public function validate(array $input, array $ruleset): true|array
+    public function validate(array $input, array $ruleset): bool|array
     {
         $messageBag = new MessageBag();
         $isValid = $this->engine->validate($input, $ruleset, $messageBag);
@@ -277,7 +277,7 @@ class Validator
         array $data,
         array $validators,
         array $fields_error_messages = []
-    ): true|array {
+    ): bool|array {
         $validator = new self();
         if (!empty($fields_error_messages)) {
             $validator->set_fields_error_messages($fields_error_messages);

@@ -128,10 +128,10 @@ Luồng này **chỉ được kích hoạt khi bạn gọi rõ ràng** `PhalconV
 
 ## 3. Yêu Cầu Hệ Thống
 
-- **PHP:** `>= 8.1` (tương thích hoàn toàn PHP 8.1, 8.2, 8.3, 8.4)
-- **Phalcon Extension:** `ext-phalcon: ^5.0 || ^6.0` (được khuyến nghị để kích hoạt native C)
-- **Extension PHP bổ trợ:** `mbstring` (xử lý Unicode UTF-8)
-
+- **Mục tiêu tương thích PHP:** PHP `>= 8.1` (tương thích hoàn toàn với PHP 8.1, 8.2, 8.3 và 8.4).
+- **Môi trường đã kiểm thử tự động thực tế:** PHP `8.3.6` (CLI NTS x64) cùng Phalcon Extension `5.8.0` (100% test suite gồm 54 bài test đều pass).
+- **Phalcon Framework mục tiêu:** `ext-phalcon: ^5.0 || ^6.0` (tùy chọn khi chạy stand-alone, khuyến nghị cài đặt để tận dụng native C và Phalcon DI).
+- **Extension PHP bổ trợ bắt buộc:** `mbstring` (xử lý chuỗi Unicode UTF-8 đa byte).
 ---
 
 ## 4. Cài Đặt Qua Composer
