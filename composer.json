@@ -64,5 +64,11 @@
     "config": {
         "sort-packages": true,
         "optimize-autoloader": true
+    },
+    "readme": "README.md",
+    "extra": {
+        "branch-alias": {
+            "dev-main": "1.1.x-dev"
+        }
     }
 }
