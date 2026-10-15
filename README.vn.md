@@ -5,6 +5,7 @@
 [![Latest Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/phatnt93/phalcon-validation)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-8892BF.svg)](https://php.net)
 [![Phalcon Support](https://img.shields.io/badge/phalcon-v5%20%7C%20v6-green.svg)](https://phalcon.io)
+[![Build Status](https://github.com/phatnt93/phalcon-validation/actions/workflows/tests.yml/badge.svg)](https://github.com/phatnt93/phalcon-validation/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Thư viện PHP Data Validation & Sanitization hiệu năng cao, cú pháp ngắn gọn, trực quan cho **Phalcon Framework v5 & v6**, lấy cảm hứng từ phong cách của [Wixel/GUMP](https://github.com/Wixel/GUMP) và tích hợp cùng [Phalcon\Filter\Validation](https://docs.phalcon.io/5.22/filter-validation).

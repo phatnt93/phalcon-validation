@@ -1,0 +1,288 @@
+# phalcon-validation — Complete API & Specification
+
+> High-performance, expressive PHP Data Validation and Sanitization library for Phalcon Framework v5 and v6, inspired by GUMP.
+
+## Table of Contents
+1. Package Identity & Architecture
+2. Core APIs & Usage Styles
+3. File Upload Suite (Filters & Validators)
+4. Complete 17 Built-in Data Filters (Sanitizers)
+5. Complete 80+ Built-in Validation Rules
+6. Nested Arrays & Wildcard Engine
+7. Phalcon Integration (DI Container, MVC Model ORM, Native C-Bridge)
+8. Custom Extensions (Validators & Filters)
+
+---
+
+## 1. Package Identity & Architecture
+
+- **Composer Package:** `phatnt93/phalcon-validation`
+- **Source Code:** https://github.com/phatnt93/phalcon-validation
+- **PHP Requirements:** PHP ^8.1 || ^8.2 || ^8.3 || ^8.4 (100% strict typing)
+- **Framework Support:** Phalcon Framework v5 (`ext-phalcon` 5.x) and v6 (`ext-phalcon` 6.x)
+- **License:** MIT
+
+### Dual-Path Execution Architecture
+1. **Engine Path (Default):** Executes via `RuleEngine` and `FilterEngine`. Handles multidimensional dot notation, wildcard arrays (`items.*.price`), automatic file upload normalization, and dual-language localization (`en`, `vi`).
+2. **Native C-Bridge Path:** Activated via `PhalconValidationAdapter::build($rules)`. Translates rule strings directly into a native C-extension `Phalcon\Filter\Validation` instance without dropping custom or extended rules (bridged safely via Phalcon Callback validator).
+
+---
+
+## 2. Core APIs & Usage Styles
+
+### Style A: One-Liner Shorthand (GUMP Style)
+```php
+use PhalconValidation\PhalconValidation;
+
+$cleanData = PhalconValidation::run($_POST, [
+    'username' => 'required|alpha_numeric|between_len,3;20',
+    'email'    => 'required|valid_email',
+], [
+    'username' => 'trim|lower_case',
+    'email'    => 'trim|lower_case|sanitize_email',
+]);
+
+if ($cleanData === false) {
+    $errors = PhalconValidation::get_errors_array();
+    // ['username' => '...', 'email' => '...']
+}
+```
+
+### Style B: Fluent Instance API
+```php
+use PhalconValidation\Validator;
+
+$validator = new Validator('en'); // or 'vi' for Vietnamese
+
+$result = $validator->validateData($data, $rules, $filters);
+
+if ($result->isValid()) {
+    $cleanData = $result->getData();
+} else {
+    $errors = $result->getErrorsArray();
+    $rawList = $result->getErrors();
+    $html = $result->getReadableErrors(true);
+}
+```
+
+### Style C: Boolean Checker
+```php
+use PhalconValidation\Validator;
+
+$isValid = Validator::is_valid($data, [
+    'email' => 'required|valid_email',
+    'age'   => 'required|integer|min_numeric,18',
+]);
+
+if ($isValid !== true) {
+    // $isValid contains array of error messages
+}
+```
+
+---
+
+## 3. File Upload Suite (Filters & Validators)
+
+### 3.1. Filter: `normalize_files` (alias: `normalize_file`)
+Transforms PHP's awkward multi-file `$_FILES` structure into a clean, sequential list of file arrays:
+```php
+$filters = ['photos' => 'normalize_files'];
+// Result in $cleanData['photos']:
+// [
+//     0 => ['name' => 'p1.jpg', 'type' => 'image/jpeg', 'tmp_name' => '/tmp/1', 'error' => 0, 'size' => 1024, 'full_path' => 'p1.jpg'],
+//     1 => ['name' => 'p2.png', 'type' => 'image/png',  'tmp_name' => '/tmp/2', 'error' => 0, 'size' => 2048, 'full_path' => 'p2.png'],
+// ]
+```
+
+### 3.2. File Validation Rules
+- **`required_file`**: File must be uploaded without errors (`UPLOAD_ERR_OK`, size > 0, non-empty filename).
+- **`extension,ext1;ext2`**: File extension must be in allowed list (`png;jpg;pdf`).
+- **`mimetype,type1;type2`** (alias: `mime_type`): Real binary MIME type inspected via `finfo_file` on disk (prevents spoofing).
+- **`max_file_size,limit`**: Max file size (`2mb`, `500kb`, `1048576`).
+- **`min_file_size,limit`**: Min file size (`10kb`, `1024`).
+
+### 3.3. Polymorphic Input Support
+Every file validator accepts:
+1. Single native file array (`$_FILES['avatar']`).
+2. Multiple native PHP file array (`$_FILES['photos']`).
+3. Normalized file list array.
+4. Phalcon File object (`Phalcon\Http\Request\File`).
+5. Direct string path on disk.
+
+---
+
+## 4. Complete 17 Built-in Data Filters (Sanitizers)
+
+1. **`trim`**: Strip whitespace from start/end (Phalcon native C).
+2. **`sanitize_string`**: Remove script tags and dangerous HTML (XSS prevention).
+3. **`sanitize_email`**: Remove illegal email characters (Phalcon native C).
+4. **`sanitize_numbers`**: Keep only digits `0-9`, `+` and `-`.
+5. **`sanitize_floats`**: Keep only digits, signs, and decimal point `.`.
+6. **`boolean`**: Cast `['1', 1, 'true', true, 'yes', 'on']` to boolean `true`, else `false`.
+7. **`basic_tags`**: Keep safe HTML tags (`<b>`, `<i>`, `<p>`), strip scripts.
+8. **`whole_number`**: Cast to integer via `intval()` (preserves negative numbers).
+9. **`ms_word_characters`**: Normalize MS Word smart quotes and dashes to web-safe characters.
+10. **`lower_case`**: Convert to lowercase UTF-8 (Phalcon native C).
+11. **`upper_case`**: Convert to uppercase UTF-8 (Phalcon native C).
+12. **`slug`**: Convert to URL slug (supports Vietnamese accents).
+13. **`urlencode`**: URL-encode string characters.
+14. **`htmlencode`**: Convert HTML characters to HTML entities.
+15. **`rmpunctuation`**: Strip all punctuation characters from string.
+16. **`noise_words`**: Strip stop-words from text.
+17. **`normalize_files`** (alias: `normalize_file`): Normalize native `$_FILES` arrays into clean list.
+
+---
+
+## 5. Complete 80+ Built-in Validation Rules
+
+### 5.1. Presence
+- `required`: Must be present, not null, not empty string, not empty array.
+- `required_file`: Must be valid uploaded file without error code.
+
+### 5.2. Strings & Length
+- `min_len,n`: String length >= n.
+- `max_len,n`: String length <= n.
+- `exact_len,n`: String length == n.
+- `between_len,min;max`: String length inclusive between min and max.
+- `word_count,min,v1,max,v2`: Word count within specified range.
+
+### 5.3. Characters & Formatting
+- `alpha`: Letters only (Phalcon native C).
+- `alpha_numeric`: Letters and digits only (Phalcon native C).
+- `alpha_numeric_space`: Letters, digits, and spaces.
+- `alpha_numeric_dash`: Letters, digits, dashes, and underscores.
+- `alpha_dash`: Letters, dashes, and underscores.
+- `alpha_space`: Letters and spaces only.
+- `camel_case`: Valid camelCase string.
+- `snake_case`: Valid snake_case string.
+- `url_slug`: Valid URL slug format (`foo-bar-123`).
+
+### 5.4. Numbers & Math
+- `numeric`: Numeric value (Phalcon native C).
+- `integer`: Integer value (Phalcon native C).
+- `float`: Floating point number.
+- `boolean`: Boolean representation.
+- `min_numeric,n`: Numeric value >= n.
+- `max_numeric,n`: Numeric value <= n.
+- `between_numeric,min;max`: Number between min and max inclusive.
+- `even`: Even integer.
+- `odd`: Odd integer.
+- `prime`: Prime integer number.
+- `starts,prefix`: String starts with given prefix.
+
+### 5.5. Comparison & Regex
+- `equalsfield,targetField`: Value must equal target field value.
+- `regex,/pattern/`: Matches regular expression (Phalcon native C).
+
+### 5.6. Network & Web
+- `valid_email`: RFC-compliant email address (Phalcon native C).
+- `valid_url`: Valid URL format (Phalcon native C).
+- `url_exists`: URL is reachable via HTTP request.
+- `valid_ip`: Valid IP address (Phalcon native C).
+- `valid_ipv4`: Valid IPv4 address.
+- `valid_ipv6`: Valid IPv6 address.
+- `mac_address`: Valid MAC address.
+- `domain_name`: Valid domain name format.
+- `port_number`: Integer between 1 and 65535.
+- `social_handle`: Valid social media handle.
+- `valid_name`: Valid human personal name.
+
+### 5.7. Date & Time
+- `date,[format]`: Valid date format (default: Y-m-d, Phalcon native C).
+- `date_range,start;end`: Date falls within inclusive range.
+- `past_date`: Date strictly in the past.
+- `future_date`: Date strictly in the future.
+- `business_day`: Date falls on Monday-Friday.
+- `valid_time`: Valid 24h or 12h time string.
+- `min_age,years`: Minimum age in years calculated from date of birth.
+
+### 5.8. Geo & ISO
+- `latitude`: Valid latitude between -90 and 90.
+- `longitude`: Valid longitude between -180 and 180.
+- `coordinates`: Lat,Long coordinate pair.
+- `postal_code`: Valid postal code format.
+- `street_address`: Valid street address string.
+- `country_code`: Valid ISO 3166-1 alpha-2 / alpha-3 code.
+- `currency_code`: Valid ISO 4217 currency code.
+- `language_code`: Valid ISO 639-1 / 639-2 code.
+- `timezone`: Valid PHP timezone identifier.
+
+### 5.9. Security & Identification
+- `valid_cc`: Valid credit card number (Luhn algorithm).
+- `iban`: Valid International Bank Account Number.
+- `uuid`: Valid UUID format.
+- `guidv4`: Valid Version 4 GUID/UUID.
+- `jwt_token`: Valid JSON Web Token format.
+- `hash,algo`: Valid hash string matching algorithm length.
+- `base64`: Valid Base64-encoded string.
+- `strong_password`: Strong password (8+ chars, upper, lower, digit, special).
+- `nosqlinjection`: Checks against SQL injection keywords.
+- `noxss`: Checks against cross-site scripting constructs.
+- `phone_number`: Valid international/national phone number.
+
+### 5.10. Content & Arrays
+- `contains,val`: Value contains substring or array contains item.
+- `contains_list,a;b`: Value contains one of the items.
+- `doesnt_contain_list,a;b`: Value does not contain any of the items.
+- `valid_json_string`: Valid JSON string syntax.
+- `valid_array_size_equal,n`: Array has exactly n elements.
+- `valid_array_size_greater,n`: Array has at least n elements.
+- `valid_array_size_lesser,n`: Array has at most n elements.
+
+### 5.11. File Uploads
+- `extension,ext1;ext2`: Allowed extensions (`pdf;docx;png;jpg`).
+- `mimetype,type1;type2`: Allowed MIME types via finfo (`image/png;image/jpeg`).
+- `max_file_size,limit`: Max file size (`2mb`, `500kb`, bytes).
+- `min_file_size,limit`: Min file size (`10kb`, bytes).
+
+### 5.12. Phalcon Database ORM
+- `unique:ModelClass,column,[ignoreCol],[ignoreVal]`: Database uniqueness check.
+- `exists:ModelClass,column`: Database existence check.
+
+---
+
+## 6. Nested Arrays & Wildcard Engine
+```php
+$data = [
+    'company' => ['name' => 'Acme Corp'],
+    'users'   => [
+        ['name' => 'John', 'email' => 'john@acme.com', 'roles' => ['admin', 'billing']],
+        ['name' => 'Jane', 'email' => 'jane@acme.com', 'roles' => ['developer']],
+    ],
+];
+
+$rules = [
+    'company.name'    => 'required|min_len,2',
+    'users.*.name'    => 'required|valid_name',
+    'users.*.email'   => 'required|valid_email',
+    'users.*.roles.*' => 'required|alpha',
+];
+```
+
+---
+
+## 7. Phalcon Integration
+
+### Dependency Injection (DI) Service Provider
+```php
+use Phalcon\Di\FactoryDefault;
+use PhalconValidation\Adapters\Phalcon\ValidationServiceProvider;
+
+$di = new FactoryDefault();
+$di->register(new ValidationServiceProvider('validator'));
+
+// Inside Controller:
+$clean = $this->validator->run($this->request->getPost(), $rules, $filters);
+```
+
+### Native Phalcon C-Extension Bridge
+```php
+use PhalconValidation\Adapters\Phalcon\PhalconValidationAdapter;
+
+$nativeValidation = PhalconValidationAdapter::build([
+    'email'    => 'required|valid_email',
+    'password' => 'required|strong_password',
+]);
+
+$messages = $nativeValidation->validate($_POST);
+```
