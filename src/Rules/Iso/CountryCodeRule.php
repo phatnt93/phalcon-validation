@@ -16,6 +16,6 @@ class CountryCodeRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        return is_string($value) && preg_match('/^[A-Z]{2,3}$/', strtoupper($value)) === 1;
+        return is_string($value) && preg_match('/^[A-Z]{2,3}$/D', strtoupper($value)) === 1;
     }
 }

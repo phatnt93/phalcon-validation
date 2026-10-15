@@ -101,16 +101,16 @@ The library provides **two clean, distinct execution paths** depending on your a
                  │                                                           ▼
          ┌───────┴───────┐                                     Returns Phalcon\Filter\Validation
          ▼               ▼                                                   │
-  4 C-Native Filters   81 PHP Rules                                ┌─────────┴─────────┐
+  4 C-Native Filters   82 PHP Rules                                ┌─────────┴─────────┐
   (trim, lower, upper, (Arr, Str, Wildcards,                       ▼                   ▼
-   sanitize_email)     Fail-fast, i18n en/vi)              17 Native C Rules   59 Extended Rules
+   sanitize_email)     Fail-fast, i18n en/vi)              14 Native C Rules   69 Extended Rules
                                                           (PresenceOf, Email, (Bridged via Phalcon
                                                            StringLength,...)   Callback Validator)
 ```
 
 ### Path 1: Standard Engine (`Validator::run()`, `PhalconValidation::run()`, `$this->validator`)
 This is the default path when calling `run()`, `validate()`, or using the DI service:
-- **Validation Engine:** Executes through `RuleEngine` across 81 PHP Rule classes. This path handles advanced capabilities that Phalcon's C-core does not natively provide:
+- **Validation Engine:** Executes through `RuleEngine` across 82 PHP Rule classes. This path handles advanced capabilities that Phalcon's C-core does not natively provide:
   - Multidimensional dot-notation resolution (`customer.profile.email`).
   - Wildcard array expansion (`items.*.price`, `order_items.*.qty`).
   - Fail-fast validation per field.
@@ -121,9 +121,15 @@ This is the default path when calling `run()`, `validate()`, or using the DI ser
 
 ### Path 2: Phalcon Native Bridge (`PhalconValidationAdapter::build()`)
 This path is **only activated when explicitly invoked** via `PhalconValidationAdapter::build($rules)`. It converts your rules into a native `Phalcon\Filter\Validation` C-extension instance:
-- **17 Native C-Validators:** `required` (`PresenceOf`), `valid_email` (`Email`), `valid_url` (`Url`), `valid_ip`/`ipv4`/`ipv6` (`Ip`), `min_len`/`max_len`/`exact_len`/`between_len` (`StringLength`), `alpha` (`Alpha`), `alpha_numeric` (`Alnum`), `numeric` (`Numericality`), `integer` (`Digit`), `between_numeric` (`Between`), `equalsfield` (`Confirmation`), `contains` (`InclusionIn`), `doesnt_contain_list` (`ExclusionIn`), `date` (`Date`), `regex` (`Regex`), `required_file` (`File`).
-- **59 Extended Rules Bridged via `Phalcon\Filter\Validation\Validator\Callback`:**
-  Advanced rules such as `strong_password`, `uuid`, `jwt_token`, `iban`, `even`, `odd`, `prime`, `word_count`, `valid_name`,... are seamlessly wrapped in Phalcon's native Callback validator. **No rule is ever dropped silently**, guaranteeing complete security.
+- **Same verdict as Path 1:** for the same rules and data, `PhalconValidationAdapter::build($rules)->validate($data)` passes or fails exactly like `Validator::is_valid($data, $rules)`. A parity test runs every natively mapped rule against empty, Unicode, signed, float, date, boolean and array input.
+- **14 rules run on native C-Validators:** `required` (`PresenceOf`), `valid_email` (`Email`), `valid_url` (`Url`), `valid_ip`/`valid_ipv4`/`valid_ipv6` (`Ip`), `min_len`/`max_len`/`exact_len`/`between_len` (`StringLength`), `alpha` (`Alpha`), `equalsfield` (`Confirmation`), `date,<format>` (`Date`), `required_file` (`File`).
+  - Non-presence validators get `allowEmpty` for `''`, `null` and `[]`, so optional fields are skipped as in Path 1 (`'0'`, `0` and `false` are still validated).
+  - `required`, `alpha`, the length rules and `equalsfield` are wrapped in a `Callback` type guard that rejects array/object input and otherwise delegates to the C-validator.
+- **69 rules bridged via `Phalcon\Filter\Validation\Validator\Callback`:**
+  Advanced rules such as `strong_password`, `uuid`, `jwt_token`, `iban`, `even`, `odd`, `prime`, `word_count`, `valid_name`,... are wrapped in Phalcon's native Callback validator. **No rule is ever dropped silently.**
+  - This includes rules whose native Phalcon validator behaves differently: `alpha_numeric` and `integer` (native `Alnum`/`Digit` are ASCII-only and unsigned), `numeric` (native `Numericality` accepts `8.8.8.8`, rejects `1e3`), `date` without a format (ISO 8601 in PHP, `Y-m-d` natively), `regex` (native `Regex` requires a full-string match), and `between_numeric`, `contains`, `doesnt_contain_list` (native validators accept booleans).
+- **Localized messages:** every validator, native or bridged, gets its message from the global Translator, with field aliases, `{param:n}` placeholders and the current locale.
+- **Known difference:** Path 1 stops at the first failing rule per field (fail-fast), while Phalcon runs every validator of a field, so a field can return more than one message.
 - **Explicit Error Handling:** Throws `RuleNotFoundException` if an unknown rule name is supplied.
 
 ---

@@ -16,6 +16,6 @@ class CamelCaseRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        return is_string($value) && preg_match('/^[a-z]+(?:[A-Z][a-z0-9]+)*$/', $value) === 1;
+        return is_string($value) && preg_match('/^[a-z]+(?:[A-Z][a-z0-9]+)*$/D', $value) === 1;
     }
 }

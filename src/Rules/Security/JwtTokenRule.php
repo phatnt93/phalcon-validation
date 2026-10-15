@@ -17,6 +17,6 @@ class JwtTokenRule extends AbstractRule
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
         return is_string($value)
-            && preg_match('/^[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+$/', $value) === 1;
+            && preg_match('/^[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+$/D', $value) === 1;
     }
 }

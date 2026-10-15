@@ -17,6 +17,6 @@ class DomainNameRule extends AbstractRule
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
         return is_string($value)
-            && preg_match('/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/', $value) === 1;
+            && preg_match('/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/D', $value) === 1;
     }
 }

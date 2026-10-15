@@ -20,6 +20,6 @@ class StreetAddressRule extends AbstractRule
             return false;
         }
 
-        return preg_match('/^\d+\s+[\p{L}0-9\s,.-]+$/u', trim($value)) === 1;
+        return preg_match('/^\d+\s+[\p{L}0-9\s,.-]+$/uD', trim($value)) === 1;
     }
 }

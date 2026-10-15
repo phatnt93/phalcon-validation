@@ -23,6 +23,10 @@ class EqualsFieldRule extends AbstractRule
         }
 
         $otherValue = Arr::get($data, $targetField);
+        if (!$this->isStringable($value) || !$this->isStringable($otherValue)) {
+            return false;
+        }
+
         return (string) $value === (string) $otherValue;
     }
 }

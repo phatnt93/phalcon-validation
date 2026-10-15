@@ -101,16 +101,16 @@ Thư viện cung cấp **2 luồng thực thi tách bạch rõ ràng** tùy theo
                  │                                                   ▼
          ┌───────┴───────┐                             Tạo Phalcon\Filter\Validation
          ▼               ▼                                           │
-  4 Filters C-Native   81 Rules PHP                      ┌───────────┴───────────┐
+  4 Filters C-Native   82 Rules PHP                      ┌───────────┴───────────┐
   (trim, lower, upper,  (Arr, Str, Wildcards,            ▼                       ▼
-   sanitize_email)      Fail-fast, i18n vi/en)    17 Rules C Native       59 Rules Mở Rộng
+   sanitize_email)      Fail-fast, i18n vi/en)    14 Rules C Native       69 Rules Mở Rộng
                                                  (PresenceOf, Email,     (Bridge qua Phalcon
                                                   StringLength,...)       Callback Validator)
 ```
 
 ### Luồng 1: Standard Engine (`Validator::run()`, `PhalconValidation::run()`, `$this->validator`)
 Đây là luồng mặc định khi gọi `run()`, `validate()`, hoặc thông qua DI container:
-- **Xử lý Validation:** Thực thi qua `RuleEngine` với 81 classes Rule của thư viện. Luồng này chuyên trách xử lý các tính năng nâng cao mà Phalcon C-core không tích hợp sẵn:
+- **Xử lý Validation:** Thực thi qua `RuleEngine` với 82 classes Rule của thư viện. Luồng này chuyên trách xử lý các tính năng nâng cao mà Phalcon C-core không tích hợp sẵn:
   - Duyệt mảng đa chiều dot-notation (`customer.profile.email`).
   - Mở rộng wildcard tự động (`items.*.price`, `order_items.*.qty`).
   - Dừng kiểm tra ngay khi gặp lỗi đầu tiên của trường (fail-fast per field).
@@ -121,10 +121,15 @@ Thư viện cung cấp **2 luồng thực thi tách bạch rõ ràng** tùy theo
 
 ### Luồng 2: Phalcon Native Bridge (`PhalconValidationAdapter::build()`)
 Luồng này **chỉ được kích hoạt khi bạn gọi rõ ràng** `PhalconValidationAdapter::build($rules)`. Nó biến toàn bộ chuỗi rules thành một đối tượng **`Phalcon\Filter\Validation`** C-extension native của Phalcon:
-- **17 Rules được thực thi bằng class C-Validator native của Phalcon:**
-  `required` (`PresenceOf`), `valid_email` (`Email`), `valid_url` (`Url`), `valid_ip`/`ipv4`/`ipv6` (`Ip`), `min_len`/`max_len`/`exact_len`/`between_len` (`StringLength`), `alpha` (`Alpha`), `alpha_numeric` (`Alnum`), `numeric` (`Numericality`), `integer` (`Digit`), `between_numeric` (`Between`), `equalsfield` (`Confirmation`), `contains` (`InclusionIn`), `doesnt_contain_list` (`ExclusionIn`), `date` (`Date`), `regex` (`Regex`), `required_file` (`File`).
-- **59 Rules mở rộng được bridge qua `Phalcon\Filter\Validation\Validator\Callback`:**
-  Các rule nâng cao như `strong_password`, `uuid`, `jwt_token`, `iban`, `even`, `odd`, `prime`, `word_count`, `valid_name`,... tự động được đóng gói vào Callback validator native của Phalcon. Nhờ đó, **không có bất kỳ rule nào bị drop âm thầm**, toàn bộ 80+ rules đều được thực thi bảo mật và sinh thông báo lỗi chuẩn qua Translator.
+- **Cùng kết quả với Luồng 1:** với cùng rules và dữ liệu, `PhalconValidationAdapter::build($rules)->validate($data)` cho kết quả đạt/không đạt giống hệt `Validator::is_valid($data, $rules)`. Có test parity chạy mọi rule map native với giá trị rỗng, Unicode, số âm, số thực, ngày, boolean và mảng.
+- **14 rules chạy bằng C-Validator native của Phalcon:** `required` (`PresenceOf`), `valid_email` (`Email`), `valid_url` (`Url`), `valid_ip`/`valid_ipv4`/`valid_ipv6` (`Ip`), `min_len`/`max_len`/`exact_len`/`between_len` (`StringLength`), `alpha` (`Alpha`), `equalsfield` (`Confirmation`), `date,<format>` (`Date`), `required_file` (`File`).
+  - Các validator không phải presence được đặt `allowEmpty` cho `''`, `null` và `[]`, nên field tùy chọn được bỏ qua giống Luồng 1 (`'0'`, `0` và `false` vẫn được kiểm tra).
+  - `required`, `alpha`, các rule độ dài và `equalsfield` được bọc trong một `Callback` kiểm tra kiểu: từ chối input là mảng/object, còn lại ủy quyền cho C-validator.
+- **69 rules được bridge qua `Phalcon\Filter\Validation\Validator\Callback`:**
+  Các rule nâng cao như `strong_password`, `uuid`, `jwt_token`, `iban`, `even`, `odd`, `prime`, `word_count`, `valid_name`,... được đóng gói vào Callback validator native của Phalcon. **Không có rule nào bị drop âm thầm.**
+  - Nhóm này gồm cả các rule mà validator native của Phalcon xử lý khác: `alpha_numeric` và `integer` (native `Alnum`/`Digit` chỉ nhận ASCII và số không dấu), `numeric` (native `Numericality` nhận `8.8.8.8`, từ chối `1e3`), `date` không có format (PHP dùng ISO 8601, native dùng `Y-m-d`), `regex` (native `Regex` đòi khớp toàn chuỗi), và `between_numeric`, `contains`, `doesnt_contain_list` (native nhận giá trị boolean).
+- **Thông báo lỗi đa ngôn ngữ:** mọi validator, native hay bridge, đều lấy thông báo từ Translator toàn cục, kèm alias field, placeholder `{param:n}` và locale hiện tại.
+- **Khác biệt đã biết:** Luồng 1 dừng ở rule lỗi đầu tiên của mỗi field (fail-fast), còn Phalcon chạy mọi validator của field, nên một field có thể trả về nhiều thông báo.
 - **Bắt lỗi cấu hình:** Nếu rule không tồn tại trong hệ thống, adapter sẽ ném ngay ngoại lệ `RuleNotFoundException`.
 
 ---

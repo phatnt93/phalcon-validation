@@ -17,6 +17,6 @@ class HexColorRule extends AbstractRule
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
         return is_string($value)
-            && preg_match('/^#?(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $value) === 1;
+            && preg_match('/^#?(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/D', $value) === 1;
     }
 }

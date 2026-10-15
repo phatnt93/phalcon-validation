@@ -16,6 +16,6 @@ class AlphaRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        return is_string($value) && preg_match('/^[\p{L}a-zA-Z]+$/u', $value) === 1;
+        return is_string($value) && preg_match('/^[\p{L}a-zA-Z]+$/uD', $value) === 1;
     }
 }

@@ -4,21 +4,14 @@ declare(strict_types=1);
 
 namespace PhalconValidation\Tests\Integration;
 
-use Phalcon\Filter\Validation\Validator\Alnum;
 use Phalcon\Filter\Validation\Validator\Alpha;
-use Phalcon\Filter\Validation\Validator\Between;
 use Phalcon\Filter\Validation\Validator\Callback;
 use Phalcon\Filter\Validation\Validator\Confirmation;
 use Phalcon\Filter\Validation\Validator\Date;
-use Phalcon\Filter\Validation\Validator\Digit;
 use Phalcon\Filter\Validation\Validator\Email;
-use Phalcon\Filter\Validation\Validator\ExclusionIn;
 use Phalcon\Filter\Validation\Validator\File;
-use Phalcon\Filter\Validation\Validator\InclusionIn;
 use Phalcon\Filter\Validation\Validator\Ip;
-use Phalcon\Filter\Validation\Validator\Numericality;
 use Phalcon\Filter\Validation\Validator\PresenceOf;
-use Phalcon\Filter\Validation\Validator\Regex;
 use Phalcon\Filter\Validation\Validator\StringLength;
 use Phalcon\Filter\Validation\Validator\Url;
 use Phalcon\Http\Request\File as RequestFile;
@@ -33,47 +26,146 @@ use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 class PhalconAdapterMappingTest extends TestCase
 {
     /**
-     * @return array<string, array{string, class-string}>
+     * Rule => [native class, guarded]. Guarded rules are wrapped in a Callback that rejects input types the native
+     * validator would judge differently and otherwise returns (delegates to) the native validator.
+     *
+     * @return array<string, array{string, class-string, bool}>
      */
     public static function nativeMappingProvider(): array
     {
         return [
-            'required' => ['required', PresenceOf::class],
-            'valid_email' => ['valid_email', Email::class],
-            'valid_url' => ['valid_url', Url::class],
-            'valid_ip' => ['valid_ip', Ip::class],
-            'valid_ipv4' => ['valid_ipv4', Ip::class],
-            'valid_ipv6' => ['valid_ipv6', Ip::class],
-            'min_len' => ['min_len,2', StringLength::class],
-            'max_len' => ['max_len,5', StringLength::class],
-            'exact_len' => ['exact_len,3', StringLength::class],
-            'between_len' => ['between_len,2;5', StringLength::class],
-            'alpha' => ['alpha', Alpha::class],
-            'alpha_numeric' => ['alpha_numeric', Alnum::class],
-            'numeric' => ['numeric', Numericality::class],
-            'integer' => ['integer', Digit::class],
-            'between_numeric' => ['between_numeric,1;10', Between::class],
-            'equalsfield' => ['equalsfield,other', Confirmation::class],
-            'contains' => ['contains,a;b', InclusionIn::class],
-            'doesnt_contain_list' => ['doesnt_contain_list,a;b', ExclusionIn::class],
-            'date' => ['date,Y-m-d', Date::class],
-            'regex' => ['regex,/^[a-z]+$/', Regex::class],
-            'required_file' => ['required_file', File::class],
-            'registry rule' => ['starts,ab', Callback::class],
+            'required' => ['required', PresenceOf::class, true],
+            'valid_email' => ['valid_email', Email::class, false],
+            'valid_url' => ['valid_url', Url::class, false],
+            'valid_ip' => ['valid_ip', Ip::class, false],
+            'valid_ipv4' => ['valid_ipv4', Ip::class, false],
+            'valid_ipv6' => ['valid_ipv6', Ip::class, false],
+            'min_len' => ['min_len,2', StringLength::class, true],
+            'max_len' => ['max_len,5', StringLength::class, true],
+            'exact_len' => ['exact_len,3', StringLength::class, true],
+            'between_len' => ['between_len,2;5', StringLength::class, true],
+            'alpha' => ['alpha', Alpha::class, true],
+            'equalsfield' => ['equalsfield,other', Confirmation::class, true],
+            'date with format' => ['date,Y-m-d', Date::class, false],
+            'required_file' => ['required_file', File::class, false],
         ];
     }
 
     /**
-     * @param class-string $expectedClass
+     * @param class-string $nativeClass
      */
     #[DataProvider('nativeMappingProvider')]
-    public function testRuleMapsToNativeValidator(string $rule, string $expectedClass): void
+    public function testRuleMapsToNativeValidator(string $rule, string $nativeClass, bool $guarded): void
     {
-        $validation = PhalconValidationAdapter::build(['field' => $rule]);
-        $validators = $validation->getValidators();
-
+        $validators = PhalconValidationAdapter::build(['field' => $rule])->getValidators();
         $this->assertCount(1, $validators['field']);
-        $this->assertInstanceOf($expectedClass, $validators['field'][0]);
+        $validator = $validators['field'][0];
+
+        if ($guarded) {
+            $this->assertInstanceOf(Callback::class, $validator);
+            $callback = $validator->getOption('callback');
+            $this->assertIsCallable($callback);
+            $this->assertInstanceOf($nativeClass, $callback(['field' => 'abc', 'other' => 'abc']));
+            $this->assertFalse($callback(['field' => $rule === 'required' ? [] : ['abc'], 'other' => 'abc']));
+        } else {
+            $this->assertInstanceOf($nativeClass, $validator);
+        }
+    }
+
+    /**
+     * Rules whose native validator disagrees with the PHP rule must use the Callback bridge.
+     *
+     * @return array<string, array{string}>
+     */
+    public static function bridgedRuleProvider(): array
+    {
+        return [
+            'alpha_numeric' => ['alpha_numeric'],
+            'numeric' => ['numeric'],
+            'integer' => ['integer'],
+            'between_numeric' => ['between_numeric,1;10'],
+            'contains' => ['contains,a;b'],
+            'doesnt_contain_list' => ['doesnt_contain_list,a;b'],
+            'date without format' => ['date'],
+            'regex' => ['regex,/^[a-z]+$/'],
+            'registry rule' => ['starts,ab'],
+        ];
+    }
+
+    #[DataProvider('bridgedRuleProvider')]
+    public function testDivergentRulesUseCallbackBridge(string $rule): void
+    {
+        $validators = PhalconValidationAdapter::build(['field' => $rule])->getValidators();
+
+        $this->assertInstanceOf(Callback::class, $validators['field'][0]);
+        $this->assertIsBool($validators['field'][0]->getOption('callback')(['field' => 'abc']));
+    }
+
+    /**
+     * Every rule the adapter maps natively (or used to) must give the same verdict as Validator::is_valid() for
+     * empty, Unicode, signed, float, date-like, boolean and non-scalar input.
+     *
+     * @return array<string, array{string, mixed}>
+     */
+    public static function parityProvider(): array
+    {
+        $rules = [
+            'required', 'valid_email', 'valid_url', 'valid_ip', 'valid_ipv4', 'valid_ipv6', 'min_len,3', 'max_len,3',
+            'exact_len,3', 'between_len,2;4', 'alpha', 'alpha_numeric', 'numeric', 'integer', 'between_numeric,1;10',
+            'equalsfield,other', 'contains,a;b', 'doesnt_contain_list,a;b', 'date', 'date,Y-m-d', 'date,d/m/Y',
+            'regex,/^[a-z]+$/', 'regex,/[0-9]/',
+        ];
+        $values = [
+            'empty string' => '', 'null' => null, 'empty array' => [], 'string zero' => '0', 'int zero' => 0,
+            'false' => false, 'true' => true, 'abc' => 'abc', 'abc newline' => "abc\n", 'unicode' => 'Đức',
+            'accented' => 'héllo', 'cjk' => '日本', 'spaces' => 'ab cd', 'alnum' => 'abc123', 'negative' => '-5',
+            'signed' => '+5', 'padded' => ' 5', 'float' => '5.5', 'exponent' => '1e3', 'int' => 12, 'negative int' => -3,
+            'float value' => 3.14, 'leading zero' => '007', 'hex' => '0x1A', 'dotted' => '8.8.8.8', 'ipv6' => '::1',
+            'a' => 'a', 'c' => 'c', 'iso date' => '2024-01-15', 'invalid date' => '2024-02-30',
+            'iso datetime' => '2024-01-15T10:00:00Z', 'dmy date' => '15/01/2024', 'email' => 'user@example.com',
+            'url' => 'http://x.com', 'ftp url' => 'ftp://x.com', 'host only' => 'x.com', 'list' => ['abc'],
+            'pair' => ['abc', 'd'],
+        ];
+
+        $cases = [];
+        foreach ($rules as $rule) {
+            foreach ($values as $label => $value) {
+                $cases[$rule . ' / ' . $label] = [$rule, $value];
+            }
+        }
+        return $cases;
+    }
+
+    #[DataProvider('parityProvider')]
+    public function testNativeAdapterMatchesPhpEngine(string $rule, mixed $value): void
+    {
+        $data = ['f' => $value, 'other' => 'abc'];
+        $expected = Validator::is_valid($data, ['f' => $rule]) === true;
+
+        $messages = PhalconValidationAdapter::build(['f' => $rule])->validate($data);
+        $this->assertSame($expected, count($messages) === 0);
+    }
+
+    public function testNativeMessagesUseTranslatorAliasAndLocale(): void
+    {
+        Validator::set_field_name('adapter_msg_email', 'Work Email');
+        $translator = Validator::getGlobalTranslator();
+
+        $messages = PhalconValidationAdapter::build([
+            'adapter_msg_email' => 'valid_email',
+            'adapter_msg_name' => 'min_len,5',
+        ])->validate(['adapter_msg_email' => 'nope', 'adapter_msg_name' => 'ab']);
+        $this->assertSame('The Work Email field must be a valid email address.', $messages[0]->getMessage());
+        $this->assertStringContainsString('at least 5 characters', $messages[1]->getMessage());
+
+        $translator->setLocale('vi');
+        try {
+            $messages = PhalconValidationAdapter::build(['adapter_msg_email' => 'valid_email'])
+                ->validate(['adapter_msg_email' => 'nope']);
+            $this->assertSame('Trường Work Email phải là một địa chỉ email hợp lệ.', $messages[0]->getMessage());
+        } finally {
+            $translator->setLocale('en');
+        }
     }
 
     public function testNativeValidatorsEnforceParams(): void

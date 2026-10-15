@@ -11,7 +11,7 @@
 - Framework Support: Phalcon Framework v5 (`ext-phalcon` 5.x) & v6
 
 ## Documentation Links
-- [Complete API Reference & All Rules](llms-full.txt): Exhaustive specification covering all 81 validation rules, 17 filters, parameters, and exceptions.
+- [Complete API Reference & All Rules](llms-full.txt): Exhaustive specification covering all 83 validation rules, 17 filters, parameters, and exceptions.
 - [Code Examples](examples/): Ready-to-run demo scripts covering one-liner, fluent API, file uploads, nested wildcards, and Phalcon DI.
 - [GitHub Repository](https://github.com/phatnt93/phalcon-validation): Source code, issues, and releases.
 - [Packagist Package](https://packagist.org/packages/phatnt93/phalcon-validation): Official Composer package distribution.

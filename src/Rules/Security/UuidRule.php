@@ -17,6 +17,6 @@ class UuidRule extends AbstractRule
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
         return is_string($value)
-            && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $value) === 1;
+            && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iD', $value) === 1;
     }
 }

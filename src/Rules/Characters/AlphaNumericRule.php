@@ -17,6 +17,6 @@ class AlphaNumericRule extends AbstractRule
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
         return (is_string($value) || is_numeric($value))
-            && preg_match('/^[\p{L}a-zA-Z0-9]+$/u', (string) $value) === 1;
+            && preg_match('/^[\p{L}a-zA-Z0-9]+$/uD', (string) $value) === 1;
     }
 }

@@ -24,7 +24,7 @@
 
 ### Dual-Path Execution Architecture
 1. **Engine Path (Default):** Executes via `RuleEngine` and `FilterEngine`. Handles multidimensional dot notation, wildcard arrays (`items.*.price`), automatic file upload normalization, and dual-language localization (`en`, `vi`).
-2. **Native C-Bridge Path:** Activated via `PhalconValidationAdapter::build($rules)`. Translates rule strings directly into a native C-extension `Phalcon\Filter\Validation` instance without dropping custom or extended rules (bridged safely via Phalcon Callback validator).
+2. **Native C-Bridge Path:** Activated via `PhalconValidationAdapter::build($rules)`. Translates rule strings directly into a native C-extension `Phalcon\Filter\Validation` instance without dropping custom or extended rules (bridged safely via Phalcon Callback validator). Pass/fail results match `Validator::is_valid()` for the same rules and data: only 14 rules with identical native semantics use C-validators (`required`, `valid_email`, `valid_url`, `valid_ip*`, `*_len`, `alpha`, `equalsfield`, `date,<format>`, `required_file`), empty values (`''`, `null`, `[]`) skip non-presence rules, and messages come from the global Translator. Unlike Path 1 it is not fail-fast: one field can return several messages.
 
 ---
 
@@ -165,7 +165,7 @@ Every file validator accepts:
 
 ### 5.3. Characters & Formatting
 - `alpha`: Letters only (Phalcon native C).
-- `alpha_numeric`: Letters and digits only (Phalcon native C).
+- `alpha_numeric`: Letters (Unicode) and digits only.
 - `alpha_numeric_space`: Letters, digits, and spaces.
 - `alpha_numeric_dash`: Letters, digits, dashes, and underscores.
 - `alpha_dash`: Letters, dashes, and underscores.
@@ -175,8 +175,8 @@ Every file validator accepts:
 - `url_slug`: Valid URL slug format (`foo-bar-123`).
 
 ### 5.4. Numbers & Math
-- `numeric`: Numeric value (Phalcon native C).
-- `integer`: Integer value (Phalcon native C).
+- `numeric`: Numeric value (`is_numeric`).
+- `integer`: Integer value (signed).
 - `float`: Floating point number.
 - `boolean`: Boolean representation.
 - `min_numeric,n`: Numeric value >= n.
@@ -189,7 +189,7 @@ Every file validator accepts:
 
 ### 5.5. Comparison & Regex
 - `equalsfield,targetField`: Value must equal target field value.
-- `regex,/pattern/`: Matches regular expression (Phalcon native C).
+- `regex,/pattern/`: Matches regular expression (`preg_match`).
 
 ### 5.6. Network & Web
 - `valid_email`: RFC-compliant email address (Phalcon native C).

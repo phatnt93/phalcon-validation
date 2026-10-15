@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.gitattributes` (dist archives exclude tests, docs, examples and tooling), `.editorconfig`, `CONTRIBUTING.md`, `AGENTS.md`, `CHANGELOG.md`.
 - CI quality job (composer validate, code style, static analysis, coverage) and a `lowest`/`highest` dependency matrix.
 - CI coverage gate: the quality job fails when line coverage drops below 90% (`tests/coverage-check.php`).
-- Test suite expanded to 374 tests (line coverage 74.4% → 98.5%): file rule edge cases, `normalize_files`, core engine, Phalcon adapter mappings and a non-scalar input sweep over every rule and filter.
+- Test suite expanded to 1269 tests (line coverage 74.4% → 98.1%): file rule edge cases, `normalize_files`, core engine, Phalcon adapter mappings, a non-scalar input sweep over every rule and filter, and a native-adapter vs PHP-engine parity matrix.
 
 ### Changed
 - Locale codes are normalized (`EN` → `en`, `en-us` → `en_US`).
@@ -33,6 +33,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - String-based rules (`min_len`, `max_len`, `exact_len`, `between_len`, `word_count`, `starts`, `date_range`, `future_date`, `past_date`, `business_day`, `min_age`, `valid_cc`, `iban`, `contains`, `contains_list`, `doesnt_contain_list`) now fail on array/object input instead of raising PHP warnings or `Error`s. Previously an array was cast to the string `"Array"`, so e.g. `min_len,3` passed for `field[]=x`.
 - `sanitize_numbers` and `sanitize_floats` return non-scalar input unchanged and `whole_number` returns `0` for arrays/objects instead of raising errors.
 - Static GUMP setters (`Validator::set_field_name()`, `set_field_names()`, `set_error_message()`, `set_error_messages()`) now apply to every `Validator` instance and to `Validator::is_valid()`. Previously they only updated an internal global translator that instances never read. Instance-level settings still take precedence. `Translator` gained an optional `?Translator $parent` constructor argument to support this.
+- Phalcon adapter (`PhalconValidationAdapter::build()`) now gives the same pass/fail result as `Validator::is_valid()` (covered by a parity test over every natively mapped rule):
+  - Optional fields: non-presence native validators get `allowEmpty` for `''`, `null` and `[]`. Previously an empty optional field failed `valid_email`, `min_len`, `numeric`, `date`, etc.
+  - `alpha_numeric`, `integer`, `numeric`, `between_numeric`, `contains`, `doesnt_contain_list`, `regex` and `date` without a format now use the Callback bridge (PHP rule). The native validators rejected Unicode letters (`Đức`) and signed integers (`-5`), accepted `8.8.8.8` as numeric and booleans in ranges/lists, and required a full-string regex match.
+  - `required` rejects an empty array, and `alpha`, the length rules and `equalsfield` reject array/object input, through a `Callback` type guard that otherwise delegates to the native validator.
+  - Native validators use messages from the global Translator (field aliases, `{param:n}`, locale) instead of Phalcon's English defaults.
+- Anchored rule patterns (`alpha`, `alpha_dash`, `alpha_numeric`, `alpha_numeric_dash`, `camel_case`, `snake_case`, `url_slug`, `hex_color`, `valid_time`, `country_code`, `currency_code`, `language_code`, `domain_name`, `social_handle`, `guidv4`, `uuid`, `iban`, `jwt_token`, ...) use the `D` modifier, so a value with a trailing newline (e.g. `"abc\n"`) no longer passes.
+- `equalsfield` fails on array/object input instead of comparing the string `"Array"` (and raising a warning).
 - Phalcon adapter: `valid_ip`, `valid_ipv4` and `valid_ipv6` now match the pure-PHP rules. The native `Ip` validator received `4`/`6` instead of `Ip::VERSION_4`/`Ip::VERSION_6`, so `valid_ipv4` accepted IPv6 addresses (and vice versa), and private/reserved addresses (e.g. `10.0.0.1`, `127.0.0.1`) were rejected.
 
 ### Security

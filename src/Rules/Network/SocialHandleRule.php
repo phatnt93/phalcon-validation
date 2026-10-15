@@ -16,6 +16,6 @@ class SocialHandleRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        return is_string($value) && preg_match('/^@?[A-Za-z0-9_]{1,30}$/', $value) === 1;
+        return is_string($value) && preg_match('/^@?[A-Za-z0-9_]{1,30}$/D', $value) === 1;
     }
 }

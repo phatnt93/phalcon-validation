@@ -21,7 +21,7 @@ class IbanRule extends AbstractRule
         }
 
         $iban = strtoupper(str_replace(' ', '', (string) $value));
-        if (!preg_match('/^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}$/', $iban)) {
+        if (!preg_match('/^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}$/D', $iban)) {
             return false;
         }
 

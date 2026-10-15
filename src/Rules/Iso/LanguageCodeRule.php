@@ -16,6 +16,6 @@ class LanguageCodeRule extends AbstractRule
 
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
-        return is_string($value) && preg_match('/^[a-z]{2,3}(?:-[A-Z]{2})?$/', $value) === 1;
+        return is_string($value) && preg_match('/^[a-z]{2,3}(?:-[A-Z]{2})?$/D', $value) === 1;
     }
 }

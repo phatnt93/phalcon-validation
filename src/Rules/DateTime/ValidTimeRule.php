@@ -17,6 +17,6 @@ class ValidTimeRule extends AbstractRule
     public function validate(string $field, mixed $value, array $params, array $data): bool
     {
         return is_string($value)
-            && preg_match('/^(?:2[0-3]|[01][0-9]):[0-5][0-9](?::[0-5][0-9])?$/', $value) === 1;
+            && preg_match('/^(?:2[0-3]|[01][0-9]):[0-5][0-9](?::[0-5][0-9])?$/D', $value) === 1;
     }
 }

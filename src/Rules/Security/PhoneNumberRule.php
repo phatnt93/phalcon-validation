@@ -20,6 +20,6 @@ class PhoneNumberRule extends AbstractRule
             return false;
         }
 
-        return preg_match('/^(\+?[0-9\s().-]{7,25})$/', (string) $value) === 1;
+        return preg_match('/^(\+?[0-9\s().-]{7,25})$/D', (string) $value) === 1;
     }
 }
