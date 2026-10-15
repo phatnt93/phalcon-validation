@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace PhalconValidation\Rules\Phalcon;
 
+use PhalconValidation\Exceptions\InvalidRuleConfigurationException;
 use PhalconValidation\Rules\AbstractRule;
 use PhalconValidation\Support\Arr;
 
 /**
  * Validates that field value is unique in database via Phalcon MVC Model.
  * Syntax: unique,ModelClass,column,[ignoreIdColumn],[ignoreIdValue]
+ *
+ * Throws InvalidRuleConfigurationException when the model class is missing or does not exist.
  */
 class UniqueModelRule extends AbstractRule
 {
@@ -20,7 +23,7 @@ class UniqueModelRule extends AbstractRule
     {
         $modelClass = $params[0] ?? '';
         if ($modelClass === '' || !class_exists($modelClass)) {
-            return false;
+            throw InvalidRuleConfigurationException::modelNotFound($this->name, $modelClass);
         }
 
         $column = $params[1] ?? $field;

@@ -15,8 +15,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
  */
 class NonScalarInputTest extends TestCase
 {
-    /** Rules that perform network I/O. */
-    private const SKIPPED_RULES = ['url_exists'];
+    /** Rules that perform network I/O or need a configured Phalcon model. */
+    private const SKIPPED_RULES = ['url_exists', 'unique', 'exists'];
 
     /** Rules that intentionally accept arrays (array size checks, file uploads, callbacks). */
     private const ARRAY_ACCEPTING_RULES = [
@@ -32,8 +32,6 @@ class NonScalarInputTest extends TestCase
         'min_file_size',
         'no_xss',
         'no_sql_injection',
-        'exists_model',
-        'unique_model',
     ];
 
     /**

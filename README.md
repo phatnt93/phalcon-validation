@@ -4,11 +4,11 @@
 
 [![Latest Version](https://img.shields.io/github/v/tag/phatnt93/phalcon-validation?sort=semver&label=version)](https://github.com/phatnt93/phalcon-validation/tags)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-8892BF.svg)](https://php.net)
-[![Phalcon Support](https://img.shields.io/badge/phalcon-v5%20%7C%20v6-green.svg)](https://phalcon.io)
+[![Phalcon Support](https://img.shields.io/badge/phalcon-v5-green.svg)](https://phalcon.io)
 [![Build Status](https://github.com/phatnt93/phalcon-validation/actions/workflows/tests.yml/badge.svg)](https://github.com/phatnt93/phalcon-validation/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A fast, flexible, expressive, and human-friendly PHP Data Validation and Sanitization library for **Phalcon Framework v5 & v6**, inspired by the minimalist syntax of [Wixel/GUMP](https://github.com/Wixel/GUMP) and integrated with [Phalcon\Filter\Validation](https://docs.phalcon.io/5.22/filter-validation).
+A fast, flexible, expressive, and human-friendly PHP Data Validation and Sanitization library for **Phalcon Framework v5**, inspired by the minimalist syntax of [Wixel/GUMP](https://github.com/Wixel/GUMP) and integrated with [Phalcon\Filter\Validation](https://docs.phalcon.io/5.22/filter-validation).
 
 ---
 
@@ -102,16 +102,16 @@ The library provides **two clean, distinct execution paths** depending on your a
                  │                                                           ▼
          ┌───────┴───────┐                                     Returns Phalcon\Filter\Validation
          ▼               ▼                                                   │
-  4 C-Native Filters   82 PHP Rules                                ┌─────────┴─────────┐
+  4 C-Native Filters   81 PHP Rules                                ┌─────────┴─────────┐
   (trim, lower, upper, (Arr, Str, Wildcards,                       ▼                   ▼
-   sanitize_email)     Fail-fast, i18n en/vi)              14 Native C Rules   69 Extended Rules
+   sanitize_email)     Fail-fast, i18n en/vi)              14 Native C Rules   68 Extended Rules
                                                           (PresenceOf, Email, (Bridged via Phalcon
                                                            StringLength,...)   Callback Validator)
 ```
 
 ### Path 1: Standard Engine (`Validator::run()`, `PhalconValidation::run()`, `$this->validator`)
 This is the default path when calling `run()`, `validate()`, or using the DI service:
-- **Validation Engine:** Executes through `RuleEngine` across 82 PHP Rule classes. This path handles advanced capabilities that Phalcon's C-core does not natively provide:
+- **Validation Engine:** Executes through `RuleEngine` across 81 PHP Rule classes. This path handles advanced capabilities that Phalcon's C-core does not natively provide:
   - Multidimensional dot-notation resolution (`customer.profile.email`).
   - Wildcard array expansion (`items.*.price`, `order_items.*.qty`).
   - Fail-fast validation per field.
@@ -126,7 +126,7 @@ This path is **only activated when explicitly invoked** via `PhalconValidationAd
 - **14 rules run on native C-Validators:** `required` (`PresenceOf`), `valid_email` (`Email`), `valid_url` (`Url`), `valid_ip`/`valid_ipv4`/`valid_ipv6` (`Ip`), `min_len`/`max_len`/`exact_len`/`between_len` (`StringLength`), `alpha` (`Alpha`), `equalsfield` (`Confirmation`), `date,<format>` (`Date`), `required_file` (`File`).
   - Non-presence validators get `allowEmpty` for `''`, `null` and `[]`, so optional fields are skipped as in Path 1 (`'0'`, `0` and `false` are still validated).
   - `required`, `alpha`, the length rules and `equalsfield` are wrapped in a `Callback` type guard that rejects array/object input and otherwise delegates to the C-validator.
-- **69 rules bridged via `Phalcon\Filter\Validation\Validator\Callback`:**
+- **68 rules bridged via `Phalcon\Filter\Validation\Validator\Callback`:**
   Advanced rules such as `strong_password`, `uuid`, `jwt_token`, `iban`, `even`, `odd`, `prime`, `word_count`, `valid_name`,... are wrapped in Phalcon's native Callback validator. **No rule is ever dropped silently.**
   - This includes rules whose native Phalcon validator behaves differently: `alpha_numeric` and `integer` (native `Alnum`/`Digit` are ASCII-only and unsigned), `numeric` (native `Numericality` accepts `8.8.8.8`, rejects `1e3`), `date` without a format (ISO 8601 in PHP, `Y-m-d` natively), `regex` (native `Regex` requires a full-string match), and `between_numeric`, `contains`, `doesnt_contain_list` (native validators accept booleans).
 - **Localized messages:** every validator, native or bridged, gets its message from the global Translator, with field aliases, `{param:n}` placeholders and the current locale.
@@ -139,7 +139,7 @@ This path is **only activated when explicitly invoked** via `PhalconValidationAd
 
 - **PHP Compatibility Targets:** PHP `>= 8.1` (compatible with PHP 8.1, 8.2, 8.3, and 8.4).
 - **Actively Tested Environment:** PHP `8.3.6` (CLI NTS x64) with Phalcon Extension `5.8.0` (the full PHPUnit suite passes; CI also runs PHP 8.1–8.4 with a 90% line coverage gate).
-- **Phalcon Framework Target:** `ext-phalcon: ^5.0 || ^6.0` (optional for stand-alone mode, recommended for native C acceleration and DI integration).
+- **Phalcon Framework Target:** `ext-phalcon: ^5.0` (optional for stand-alone mode, recommended for native C acceleration and DI integration). Phalcon v6 is not supported yet.
 - **Required PHP Extensions:** `mbstring` (multibyte UTF-8 string handling).
 ---
 
@@ -466,6 +466,8 @@ $rules = [
 ];
 ```
 
+If the model class is missing or misspelled, both rules throw `PhalconValidation\Exceptions\InvalidRuleConfigurationException` instead of reporting the field as invalid, so configuration mistakes surface during development. Empty optional fields are still skipped before this check.
+
 ---
 
 ## 9. File Upload Validation and Normalization
@@ -600,11 +602,12 @@ Every file validator automatically detects and validates:
 - **`valid_time`**: Time format (`HH:MM:SS` or `HH:MM`).
 - **`min_age,years`**: Age from birthdate >= minimum years.
 
+> **Note:** `date_range`, `future_date`, `past_date`, `business_day` and `min_age` parse values with PHP `strtotime()`, so they also accept relative or free-form strings (`tomorrow`, `next monday`, `15 March 1990`; even `a` is read as "now"). Add `date` before them (e.g. `date|past_date`) when only ISO 8601 dates should be accepted. Stricter parsing with an optional format parameter is planned for a later minor release.
+
 ### 11.8. Locations & Geo
 - **`latitude`**: Latitude coordinate (-90 to 90).
 - **`longitude`**: Longitude coordinate (-180 to 180).
 - **`coordinates`**: Coordinates in `lat,lng` format.
-- **`postal_code`**: Postal code format.
 - **`street_address`**: Street address structure.
 
 ### 11.9. ISO Standards

@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace PhalconValidation\Rules\Phalcon;
 
+use PhalconValidation\Exceptions\InvalidRuleConfigurationException;
 use PhalconValidation\Rules\AbstractRule;
 
 /**
  * Validates that field value exists in database via Phalcon MVC Model.
  * Syntax: exists,ModelClass,column
+ *
+ * Throws InvalidRuleConfigurationException when the model class is missing or does not exist.
  */
 class ExistsModelRule extends AbstractRule
 {
@@ -19,7 +22,7 @@ class ExistsModelRule extends AbstractRule
     {
         $modelClass = $params[0] ?? '';
         if ($modelClass === '' || !class_exists($modelClass)) {
-            return false;
+            throw InvalidRuleConfigurationException::modelNotFound($this->name, $modelClass);
         }
 
         $column = $params[1] ?? $field;

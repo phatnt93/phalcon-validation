@@ -5,8 +5,8 @@
 | Version | Supported          | PHP Compatibility |
 | ------- | ------------------ | ----------------- |
 | 1.2.x   | :white_check_mark: | 8.1, 8.2, 8.3, 8.4 |
-| 1.1.x   | :white_check_mark: | 8.1, 8.2, 8.3, 8.4 |
-| 1.0.x   | :white_check_mark: | 8.1, 8.2, 8.3, 8.4 |
+| 1.1.x   | :x:                | -                 |
+| 1.0.x   | :x:                | -                 |
 | < 1.0   | :x:                | -                 |
 
 ## Reporting a Vulnerability

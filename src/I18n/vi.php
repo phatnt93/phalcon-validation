@@ -52,7 +52,6 @@ return [
     'latitude' => 'Trường {field} phải là vĩ độ hợp lệ (-90 đến 90).',
     'longitude' => 'Trường {field} phải là kinh độ hợp lệ (-180 đến 180).',
     'coordinates' => 'Trường {field} phải là tọa độ hợp lệ theo định dạng vĩ độ,kinh độ.',
-    'postal_code' => 'Trường {field} phải là mã bưu điện hợp lệ.',
     'street_address' => 'Trường {field} phải là địa chỉ đường phố hợp lệ.',
     'country_code' => 'Trường {field} phải là mã quốc gia chuẩn ISO hợp lệ.',
     'currency_code' => 'Trường {field} phải là mã tiền tệ chuẩn ISO hợp lệ.',

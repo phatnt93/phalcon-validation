@@ -1,6 +1,6 @@
 # phalcon-validation — Complete API & Specification
 
-> High-performance, expressive PHP Data Validation and Sanitization library for Phalcon Framework v5 and v6, inspired by GUMP.
+> High-performance, expressive PHP Data Validation and Sanitization library for Phalcon Framework v5, inspired by GUMP.
 
 ## Table of Contents
 1. Package Identity & Architecture
@@ -19,7 +19,7 @@
 - **Composer Package:** `phatnt93/phalcon-validation`
 - **Source Code:** https://github.com/phatnt93/phalcon-validation
 - **PHP Requirements:** PHP ^8.1 || ^8.2 || ^8.3 || ^8.4 (100% strict typing)
-- **Framework Support:** Phalcon Framework v5 (`ext-phalcon` 5.x) and v6 (`ext-phalcon` 6.x)
+- **Framework Support:** Phalcon Framework v5 (`ext-phalcon` 5.x). Phalcon v6 is not supported yet.
 - **License:** MIT
 
 ### Dual-Path Execution Architecture
@@ -212,12 +212,12 @@ Every file validator accepts:
 - `business_day`: Date falls on Monday-Friday.
 - `valid_time`: Valid 24h or 12h time string.
 - `min_age,years`: Minimum age in years calculated from date of birth.
+- Note: `date_range`, `past_date`, `future_date`, `business_day` and `min_age` use `strtotime()` and accept relative strings (`tomorrow`, even `a` = now). Combine with `date` (e.g. `date|past_date`) to require ISO 8601.
 
 ### 5.8. Geo & ISO
 - `latitude`: Valid latitude between -90 and 90.
 - `longitude`: Valid longitude between -180 and 180.
 - `coordinates`: Lat,Long coordinate pair.
-- `postal_code`: Valid postal code format.
 - `street_address`: Valid street address string.
 - `country_code`: Valid ISO 3166-1 alpha-2 / alpha-3 code.
 - `currency_code`: Valid ISO 4217 currency code.
@@ -255,6 +255,7 @@ Every file validator accepts:
 ### 5.12. Phalcon Database ORM
 - `unique,ModelClass,column,[ignoreCol],[ignoreVal]`: Database uniqueness check.
 - `exists,ModelClass,column`: Database existence check.
+- Both throw `PhalconValidation\Exceptions\InvalidRuleConfigurationException` when the model class is missing or does not exist.
 
 ---
 

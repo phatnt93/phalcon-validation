@@ -1,17 +1,17 @@
 # phalcon-validation
 
-> High-performance, expressive PHP data validation and sanitization library for Phalcon Framework v5 and v6, inspired by GUMP.
+> High-performance, expressive PHP data validation and sanitization library for Phalcon Framework v5, inspired by GUMP.
 
 ## Package Identity
 - Package Name: `phatnt93/phalcon-validation`
 - Packagist: https://packagist.org/packages/phatnt93/phalcon-validation
 - Source Repository: https://github.com/phatnt93/phalcon-validation
 - License: MIT
-- Language: PHP 8.1+ (strict typing, 100% test coverage)
-- Framework Support: Phalcon Framework v5 (`ext-phalcon` 5.x) & v6
+- Language: PHP 8.1+ (strict typing, 98% line coverage)
+- Framework Support: Phalcon Framework v5 (`ext-phalcon` 5.x); Phalcon v6 is not supported yet
 
 ## Documentation Links
-- [Complete API Reference & All Rules](llms-full.txt): Exhaustive specification covering all 83 validation rules, 17 filters, parameters, and exceptions.
+- [Complete API Reference & All Rules](llms-full.txt): Exhaustive specification covering all 82 validation rules, 17 filters, parameters, and exceptions.
 - [Code Examples](examples/): Ready-to-run demo scripts covering one-liner, fluent API, file uploads, nested wildcards, and Phalcon DI.
 - [GitHub Repository](https://github.com/phatnt93/phalcon-validation): Source code, issues, and releases.
 - [Packagist Package](https://packagist.org/packages/phatnt93/phalcon-validation): Official Composer package distribution.
@@ -171,7 +171,7 @@ $validator->setLocale('fr');
 - **Regex:** `regex,/pattern/`
 - **Network:** `valid_email`, `valid_url`, `url_exists,[allow_private]`, `valid_ip`, `valid_ipv4`, `valid_ipv6`, `mac_address`, `domain_name`, `port_number`, `social_handle`, `valid_name`
 - **DateTime:** `date,[format]`, `date_range,start;end`, `past_date`, `future_date`, `business_day`, `valid_time`, `min_age,n`
-- **Geo:** `latitude`, `longitude`, `coordinates`, `postal_code`, `street_address`
+- **Geo:** `latitude`, `longitude`, `coordinates`, `street_address`
 - **ISO:** `country_code`, `currency_code`, `language_code`, `timezone`
 - **Security:** `valid_cc`, `iban`, `uuid`, `guidv4`, `jwt_token`, `hash,algorithm`, `base64`, `strong_password`, `nosqlinjection`, `noxss`, `phone_number`
 - **Content:** `contains,val`, `contains_list,a;b`, `doesnt_contain_list,a;b`, `valid_json_string`, `valid_array_size_equal,n`, `valid_array_size_greater,n`, `valid_array_size_lesser,n`

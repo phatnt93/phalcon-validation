@@ -5,7 +5,7 @@ Guidance for AI coding agents working **inside this repository**. To use the lib
 ## Project
 
 - Package: `phatnt93/phalcon-validation`. Namespace `PhalconValidation\` → `src/`, tests `PhalconValidation\Tests\` → `tests/`.
-- GUMP-style validation and sanitization for Phalcon v5/v6; runs without `ext-phalcon` except for the Phalcon adapters and ORM rules.
+- GUMP-style validation and sanitization for Phalcon v5 (v6 not supported yet); runs without `ext-phalcon` except for the Phalcon adapters and ORM rules.
 - Layout: `src/Contracts` (interfaces), `src/Core` (engine, registries, parser), `src/Rules`, `src/Filters`, `src/Messages` (translator, message bag), `src/I18n` (locale dictionaries), `src/Adapters/Phalcon`, `src/Exceptions`, `src/Support`.
 
 ## Commands

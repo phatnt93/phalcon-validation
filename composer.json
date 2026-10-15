@@ -1,6 +1,6 @@
 {
     "name": "phatnt93/phalcon-validation",
-    "description": "High-performance, expressive PHP data validation and sanitization library for Phalcon Framework v5 and v6, inspired by GUMP. Features 80+ validators, 17 filters, nested wildcard arrays, file upload validation, and Phalcon MVC Model ORM integration.",
+    "description": "High-performance, expressive PHP data validation and sanitization library for Phalcon Framework v5, inspired by GUMP. Features 80+ validators, 17 filters, nested wildcard arrays, file upload validation, and Phalcon MVC Model ORM integration.",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -12,7 +12,6 @@
     "keywords": [
         "phalcon",
         "phalcon5",
-        "phalcon6",
         "cphalcon",
         "validation",
         "validator",
@@ -42,7 +41,7 @@
         "php": "^8.1"
     },
     "suggest": {
-        "ext-phalcon": "Required to use Phalcon native C validators, filters and DI service provider (^5.0 || ^6.0)"
+        "ext-phalcon": "Required to use Phalcon native C validators, filters and DI service provider (^5.0)"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.75",

@@ -52,7 +52,6 @@ return [
     'latitude' => 'The {field} field must be a valid latitude coordinate (-90 to 90).',
     'longitude' => 'The {field} field must be a valid longitude coordinate (-180 to 180).',
     'coordinates' => 'The {field} field must be valid coordinates in latitude,longitude format.',
-    'postal_code' => 'The {field} field must be a valid postal code.',
     'street_address' => 'The {field} field must be a valid street address.',
     'country_code' => 'The {field} field must be a valid ISO country code.',
     'currency_code' => 'The {field} field must be a valid ISO currency code.',

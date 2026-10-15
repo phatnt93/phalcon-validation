@@ -4,11 +4,11 @@
 
 [![Latest Version](https://img.shields.io/github/v/tag/phatnt93/phalcon-validation?sort=semver&label=version)](https://github.com/phatnt93/phalcon-validation/tags)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-8892BF.svg)](https://php.net)
-[![Phalcon Support](https://img.shields.io/badge/phalcon-v5%20%7C%20v6-green.svg)](https://phalcon.io)
+[![Phalcon Support](https://img.shields.io/badge/phalcon-v5-green.svg)](https://phalcon.io)
 [![Build Status](https://github.com/phatnt93/phalcon-validation/actions/workflows/tests.yml/badge.svg)](https://github.com/phatnt93/phalcon-validation/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Thư viện PHP Data Validation & Sanitization hiệu năng cao, cú pháp ngắn gọn, trực quan cho **Phalcon Framework v5 & v6**, lấy cảm hứng từ phong cách của [Wixel/GUMP](https://github.com/Wixel/GUMP) và tích hợp cùng [Phalcon\Filter\Validation](https://docs.phalcon.io/5.22/filter-validation).
+Thư viện PHP Data Validation & Sanitization hiệu năng cao, cú pháp ngắn gọn, trực quan cho **Phalcon Framework v5**, lấy cảm hứng từ phong cách của [Wixel/GUMP](https://github.com/Wixel/GUMP) và tích hợp cùng [Phalcon\Filter\Validation](https://docs.phalcon.io/5.22/filter-validation).
 
 ---
 
@@ -102,16 +102,16 @@ Thư viện cung cấp **2 luồng thực thi tách bạch rõ ràng** tùy theo
                  │                                                   ▼
          ┌───────┴───────┐                             Tạo Phalcon\Filter\Validation
          ▼               ▼                                           │
-  4 Filters C-Native   82 Rules PHP                      ┌───────────┴───────────┐
+  4 Filters C-Native   81 Rules PHP                      ┌───────────┴───────────┐
   (trim, lower, upper,  (Arr, Str, Wildcards,            ▼                       ▼
-   sanitize_email)      Fail-fast, i18n vi/en)    14 Rules C Native       69 Rules Mở Rộng
+   sanitize_email)      Fail-fast, i18n vi/en)    14 Rules C Native       68 Rules Mở Rộng
                                                  (PresenceOf, Email,     (Bridge qua Phalcon
                                                   StringLength,...)       Callback Validator)
 ```
 
 ### Luồng 1: Standard Engine (`Validator::run()`, `PhalconValidation::run()`, `$this->validator`)
 Đây là luồng mặc định khi gọi `run()`, `validate()`, hoặc thông qua DI container:
-- **Xử lý Validation:** Thực thi qua `RuleEngine` với 82 classes Rule của thư viện. Luồng này chuyên trách xử lý các tính năng nâng cao mà Phalcon C-core không tích hợp sẵn:
+- **Xử lý Validation:** Thực thi qua `RuleEngine` với 81 classes Rule của thư viện. Luồng này chuyên trách xử lý các tính năng nâng cao mà Phalcon C-core không tích hợp sẵn:
   - Duyệt mảng đa chiều dot-notation (`customer.profile.email`).
   - Mở rộng wildcard tự động (`items.*.price`, `order_items.*.qty`).
   - Dừng kiểm tra ngay khi gặp lỗi đầu tiên của trường (fail-fast per field).
@@ -126,7 +126,7 @@ Luồng này **chỉ được kích hoạt khi bạn gọi rõ ràng** `PhalconV
 - **14 rules chạy bằng C-Validator native của Phalcon:** `required` (`PresenceOf`), `valid_email` (`Email`), `valid_url` (`Url`), `valid_ip`/`valid_ipv4`/`valid_ipv6` (`Ip`), `min_len`/`max_len`/`exact_len`/`between_len` (`StringLength`), `alpha` (`Alpha`), `equalsfield` (`Confirmation`), `date,<format>` (`Date`), `required_file` (`File`).
   - Các validator không phải presence được đặt `allowEmpty` cho `''`, `null` và `[]`, nên field tùy chọn được bỏ qua giống Luồng 1 (`'0'`, `0` và `false` vẫn được kiểm tra).
   - `required`, `alpha`, các rule độ dài và `equalsfield` được bọc trong một `Callback` kiểm tra kiểu: từ chối input là mảng/object, còn lại ủy quyền cho C-validator.
-- **69 rules được bridge qua `Phalcon\Filter\Validation\Validator\Callback`:**
+- **68 rules được bridge qua `Phalcon\Filter\Validation\Validator\Callback`:**
   Các rule nâng cao như `strong_password`, `uuid`, `jwt_token`, `iban`, `even`, `odd`, `prime`, `word_count`, `valid_name`,... được đóng gói vào Callback validator native của Phalcon. **Không có rule nào bị drop âm thầm.**
   - Nhóm này gồm cả các rule mà validator native của Phalcon xử lý khác: `alpha_numeric` và `integer` (native `Alnum`/`Digit` chỉ nhận ASCII và số không dấu), `numeric` (native `Numericality` nhận `8.8.8.8`, từ chối `1e3`), `date` không có format (PHP dùng ISO 8601, native dùng `Y-m-d`), `regex` (native `Regex` đòi khớp toàn chuỗi), và `between_numeric`, `contains`, `doesnt_contain_list` (native nhận giá trị boolean).
 - **Thông báo lỗi đa ngôn ngữ:** mọi validator, native hay bridge, đều lấy thông báo từ Translator toàn cục, kèm alias field, placeholder `{param:n}` và locale hiện tại.
@@ -139,7 +139,7 @@ Luồng này **chỉ được kích hoạt khi bạn gọi rõ ràng** `PhalconV
 
 - **Mục tiêu tương thích PHP:** PHP `>= 8.1` (tương thích hoàn toàn với PHP 8.1, 8.2, 8.3 và 8.4).
 - **Môi trường đã kiểm thử tự động thực tế:** PHP `8.3.6` (CLI NTS x64) cùng Phalcon Extension `5.8.0` (toàn bộ test PHPUnit đều pass; CI chạy thêm PHP 8.1–8.4 với ngưỡng line coverage 90%).
-- **Phalcon Framework mục tiêu:** `ext-phalcon: ^5.0 || ^6.0` (tùy chọn khi chạy stand-alone, khuyến nghị cài đặt để tận dụng native C và Phalcon DI).
+- **Phalcon Framework mục tiêu:** `ext-phalcon: ^5.0` (tùy chọn khi chạy stand-alone, khuyến nghị cài đặt để tận dụng native C và Phalcon DI). Chưa hỗ trợ Phalcon v6.
 - **Extension PHP bổ trợ bắt buộc:** `mbstring` (xử lý chuỗi Unicode UTF-8 đa byte).
 ---
 
@@ -466,6 +466,8 @@ $rules = [
 ];
 ```
 
+Nếu class model bị thiếu hoặc gõ sai tên, cả hai rule sẽ ném `PhalconValidation\Exceptions\InvalidRuleConfigurationException` thay vì báo field không hợp lệ, để lỗi cấu hình lộ ra ngay khi phát triển. Field tùy chọn để trống vẫn được bỏ qua trước bước kiểm tra này.
+
 ---
 
 ## 9. Xác Thực và Chuẩn Hóa Tệp Tin Tải Lên (File Uploads)
@@ -600,11 +602,12 @@ Mọi rule kiểm tra tệp tin đều tự động phân tích và tương thí
 - **`valid_time`**: Định dạng giờ phút giây (`HH:MM:SS` hoặc `HH:MM`).
 - **`min_age,years`**: Tuổi tính từ ngày sinh >= số năm chỉ định.
 
+> **Lưu ý:** `date_range`, `future_date`, `past_date`, `business_day` và `min_age` đọc giá trị bằng `strtotime()` của PHP, nên chấp nhận cả chuỗi tương đối hoặc tự do (`tomorrow`, `next monday`, `15 March 1990`; thậm chí `a` cũng được hiểu là "bây giờ"). Đặt `date` phía trước (ví dụ `date|past_date`) nếu chỉ muốn nhận ngày ISO 8601. Việc siết cách đọc ngày và thêm tham số format tùy chọn được lên kế hoạch cho một bản minor sau.
+
 ### 11.8. Nhóm Vị trí & Địa lý
 - **`latitude`**: Vĩ độ hợp lệ (-90 đến 90).
 - **`longitude`**: Kinh độ hợp lệ (-180 đến 180).
 - **`coordinates`**: Tọa độ hợp lệ theo định dạng `lat,lng`.
-- **`postal_code`**: Mã bưu chính hợp lệ.
 - **`street_address`**: Nhận diện cấu trúc địa chỉ đường phố.
 
 ### 11.9. Nhóm Chuẩn ISO

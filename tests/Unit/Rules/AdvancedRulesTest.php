@@ -97,7 +97,6 @@ class AdvancedRulesTest extends TestCase
             'lat' => 'latitude',
             'lng' => 'longitude',
             'coord' => 'coordinates',
-            'zip' => 'postal_code',
             'address' => 'street_address',
             'country' => 'country_code',
             'currency' => 'currency_code',
@@ -109,7 +108,6 @@ class AdvancedRulesTest extends TestCase
             'lat' => '16.0544',
             'lng' => '108.2022',
             'coord' => '16.0544, 108.2022',
-            'zip' => '550000',
             'address' => '123 Nguyen Van Linh, Da Nang',
             'country' => 'VNM',
             'currency' => 'VND',
@@ -122,7 +120,6 @@ class AdvancedRulesTest extends TestCase
             'lat' => '95.0',
             'lng' => '200.0',
             'coord' => 'not coordinates',
-            'zip' => '!@#$',
             'address' => 'NoNumberAddress',
             'country' => 'VIETNAM',
             'currency' => 'DONG',
@@ -131,7 +128,7 @@ class AdvancedRulesTest extends TestCase
         ];
         $res = Validator::is_valid($invalidData, $rules);
         $this->assertIsArray($res);
-        $this->assertCount(9, $res);
+        $this->assertCount(8, $res);
     }
 
     public function testSecurityAndFinanceRules(): void

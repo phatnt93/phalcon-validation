@@ -19,13 +19,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.gitattributes` (dist archives exclude tests, docs, examples and tooling), `.editorconfig`, `CONTRIBUTING.md`, `AGENTS.md`, `CHANGELOG.md`.
 - CI quality job (composer validate, code style, static analysis, coverage) and a `lowest`/`highest` dependency matrix.
 - CI coverage gate: the quality job fails when line coverage drops below 90% (`tests/coverage-check.php`).
-- Test suite expanded to 1269 tests (line coverage 74.4% → 98.1%): file rule edge cases, `normalize_files`, core engine, Phalcon adapter mappings, a non-scalar input sweep over every rule and filter, and a native-adapter vs PHP-engine parity matrix.
+- `PhalconValidation\Exceptions\InvalidRuleConfigurationException`.
+- Test suite expanded to 1271 tests (line coverage 74.4% → 98.1%): file rule edge cases, `normalize_files`, core engine, Phalcon adapter mappings, a non-scalar input sweep over every rule and filter, and a native-adapter vs PHP-engine parity matrix.
 
 ### Changed
 - Locale codes are normalized (`EN` → `en`, `en-us` → `en_US`).
 - `README.vn.md` renamed to `README.vi.md` (ISO 639-1 language code); READMEs now use a language switcher and a dynamic version badge.
 - `.github/copilot-instructions.md` and Cursor rules now point to `AGENTS.md`; the legacy `.cursorrules` file was replaced by `.cursor/rules/library.mdc`.
 - `composer.json`: `php` constraint simplified to `^8.1`; removed `optimize-autoloader` (no effect for libraries).
+- **Behaviour change:** `unique` and `exists` throw `InvalidRuleConfigurationException` when the model class is missing or does not exist. Previously the rule silently failed and reported the field as invalid (e.g. "has already been taken").
+- Only Phalcon v5 is supported. Documentation, the README badge and the `ext-phalcon` suggestion no longer claim Phalcon v6 support.
+- Security support policy: only the latest minor release (1.2.x) receives fixes.
+
+### Removed
+- **Breaking:** the `postal_code` rule and its `postal_code` message key. It accepted a country parameter but ignored it, validating every value against one generic pattern. Use `regex` with a pattern for the countries you need.
 
 ### Fixed
 - `date` without a format no longer accepts any string `strtotime()` understands (e.g. `a`, `1.5`, `now`, `next monday`). It now requires an ISO 8601 calendar date (`Y-m-d`, `Y-m-d H:i[:s]`, `Y-m-d\TH:i[:s]` with optional offset or `Z`) and rejects overflowing dates such as `2024-02-30`. **Behaviour change:** use `date,<format>` for other formats.

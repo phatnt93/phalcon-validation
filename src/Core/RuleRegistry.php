@@ -65,7 +65,6 @@ use PhalconValidation\Rules\DateTime\MinAgeRule;
 use PhalconValidation\Rules\Geo\LatitudeRule;
 use PhalconValidation\Rules\Geo\LongitudeRule;
 use PhalconValidation\Rules\Geo\CoordinatesRule;
-use PhalconValidation\Rules\Geo\PostalCodeRule;
 use PhalconValidation\Rules\Geo\StreetAddressRule;
 // Iso
 use PhalconValidation\Rules\Iso\CountryCodeRule;
@@ -185,11 +184,10 @@ class RuleRegistry implements RuleRegistryInterface
         $this->register(new ValidTimeRule());
         $this->register(new MinAgeRule());
 
-        // 8. Geo (5)
+        // 8. Geo (4)
         $this->register(new LatitudeRule());
         $this->register(new LongitudeRule());
         $this->register(new CoordinatesRule());
-        $this->register(new PostalCodeRule());
         $this->register(new StreetAddressRule());
 
         // 9. Iso (4)
