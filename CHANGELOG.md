@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-15
+
 ### Added
 - `between_numeric,min;max` rule (inclusive range). It was already documented and mapped by the Phalcon adapter but missing from the rule registry, so using it threw `RuleNotFoundException`.
 - `url_exists,allow_private` parameter to opt out of the private/reserved address check.
@@ -78,7 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release: GUMP-style validation and sanitization API for Phalcon v5/v6, 80+ validators, 17 filters, nested arrays and wildcards, field aliases, `en`/`vi` messages, Phalcon DI service provider and native `Phalcon\Filter\Validation` bridge.
 
-[Unreleased]: https://github.com/phatnt93/phalcon-validation/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/phatnt93/phalcon-validation/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/phatnt93/phalcon-validation/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/phatnt93/phalcon-validation/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/phatnt93/phalcon-validation/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/phatnt93/phalcon-validation/releases/tag/v1.0.0
