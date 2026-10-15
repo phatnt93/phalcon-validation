@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PHPStan and PHP-CS-Fixer (PER-CS 2.0) with `composer analyse`, `composer cs:check` and `composer cs:fix` scripts.
 - `.gitattributes` (dist archives exclude tests, docs, examples and tooling), `.editorconfig`, `CONTRIBUTING.md`, `AGENTS.md`, `CHANGELOG.md`.
 - CI quality job (composer validate, code style, static analysis, coverage) and a `lowest`/`highest` dependency matrix.
+- CI coverage gate: the quality job fails when line coverage drops below 90% (`tests/coverage-check.php`).
+- Test suite expanded to 310 tests (line coverage 74.4% → 98.5%): file rule edge cases, `normalize_files`, core engine, Phalcon adapter mappings and a non-scalar input sweep over every rule and filter.
 
 ### Changed
 - Locale codes are normalized (`EN` → `en`, `en-us` → `en_US`).
