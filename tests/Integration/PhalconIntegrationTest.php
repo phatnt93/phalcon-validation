@@ -49,7 +49,7 @@ class PhalconIntegrationTest extends TestCase
         $this->assertInstanceOf(NativePhalconValidation::class, $nativeValidation);
 
         // Native validation validate valid data
-        $messages = $nativeValidation->validate([
+        $messages = $this->nativeValidate($nativeValidation, [
             'email' => 'admin@example.com',
             'username' => 'admin123',
             'status' => 'active',
@@ -57,7 +57,7 @@ class PhalconIntegrationTest extends TestCase
         $this->assertSame(0, count($messages));
 
         // Native validation validate invalid data
-        $invalidMessages = $nativeValidation->validate([
+        $invalidMessages = $this->nativeValidate($nativeValidation, [
             'email' => 'not-an-email',
             'username' => 'admin!@#',
             'status' => 'banned',
@@ -75,13 +75,13 @@ class PhalconIntegrationTest extends TestCase
         ]);
 
         // Case 1: Weak password must FAIL
-        $messages = $nativeValidation->validate(['password' => 'x']);
+        $messages = $this->nativeValidate($nativeValidation, ['password' => 'x']);
         $this->assertSame(1, count($messages));
         $this->assertSame('password', $messages[0]->getField());
         $this->assertStringContainsString('special characters', $messages[0]->getMessage());
 
         // Case 2: Strong password must PASS
-        $validMessages = $nativeValidation->validate(['password' => 'Secret@12345']);
+        $validMessages = $this->nativeValidate($nativeValidation, ['password' => 'Secret@12345']);
         $this->assertSame(0, count($validMessages));
     }
 

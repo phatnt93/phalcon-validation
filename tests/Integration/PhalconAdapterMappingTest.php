@@ -142,7 +142,7 @@ class PhalconAdapterMappingTest extends TestCase
         $data = ['f' => $value, 'other' => 'abc'];
         $expected = Validator::is_valid($data, ['f' => $rule]) === true;
 
-        $messages = PhalconValidationAdapter::build(['f' => $rule])->validate($data);
+        $messages = $this->nativeValidate(PhalconValidationAdapter::build(['f' => $rule]), $data);
         $this->assertSame($expected, count($messages) === 0);
     }
 
@@ -151,17 +151,16 @@ class PhalconAdapterMappingTest extends TestCase
         Validator::set_field_name('adapter_msg_email', 'Work Email');
         $translator = Validator::getGlobalTranslator();
 
-        $messages = PhalconValidationAdapter::build([
+        $messages = $this->nativeValidate(PhalconValidationAdapter::build([
             'adapter_msg_email' => 'valid_email',
             'adapter_msg_name' => 'min_len,5',
-        ])->validate(['adapter_msg_email' => 'nope', 'adapter_msg_name' => 'ab']);
+        ]), ['adapter_msg_email' => 'nope', 'adapter_msg_name' => 'ab']);
         $this->assertSame('The Work Email field must be a valid email address.', $messages[0]->getMessage());
         $this->assertStringContainsString('at least 5 characters', $messages[1]->getMessage());
 
         $translator->setLocale('vi');
         try {
-            $messages = PhalconValidationAdapter::build(['adapter_msg_email' => 'valid_email'])
-                ->validate(['adapter_msg_email' => 'nope']);
+            $messages = $this->nativeValidate(PhalconValidationAdapter::build(['adapter_msg_email' => 'valid_email']), ['adapter_msg_email' => 'nope']);
             $this->assertSame('Trường Work Email phải là một địa chỉ email hợp lệ.', $messages[0]->getMessage());
         } finally {
             $translator->setLocale('en');
@@ -179,7 +178,7 @@ class PhalconAdapterMappingTest extends TestCase
             'skip' => 'doesnt_contain_list,a;b',
         ]);
 
-        $this->assertCount(0, $validation->validate([
+        $this->assertCount(0, $this->nativeValidate($validation, [
             'ip4' => '8.8.8.8',
             'name' => 'abcd',
             'code' => 'abc',
@@ -188,7 +187,7 @@ class PhalconAdapterMappingTest extends TestCase
             'skip' => 'c',
         ]));
 
-        $this->assertCount(6, $validation->validate([
+        $this->assertCount(6, $this->nativeValidate($validation, [
             'ip4' => '::1',
             'name' => 'abcdefg',
             'code' => 'ab',
@@ -223,7 +222,7 @@ class PhalconAdapterMappingTest extends TestCase
         $this->assertNotNull($phpRule);
         $expected = $phpRule->validate('ip', $ip, [], []);
 
-        $messages = PhalconValidationAdapter::build(['ip' => $rule])->validate(['ip' => $ip]);
+        $messages = $this->nativeValidate(PhalconValidationAdapter::build(['ip' => $rule]), ['ip' => $ip]);
         $this->assertSame($expected, count($messages) === 0);
     }
 
@@ -235,7 +234,7 @@ class PhalconAdapterMappingTest extends TestCase
 
         foreach (['17', '18', '40', '65', '65.5', -1] as $value) {
             $expected = $phpRule->validate('n', $value, ['18', '65'], []);
-            $this->assertSame($expected, count($native->validate(['n' => $value])) === 0, 'Value ' . $value);
+            $this->assertSame($expected, count($this->nativeValidate($native, ['n' => $value])) === 0, 'Value ' . $value);
         }
     }
 
@@ -267,18 +266,18 @@ class PhalconAdapterMappingTest extends TestCase
         ]);
 
         $this->assertInstanceOf(Callback::class, $validation->getValidators()['age'][0]);
-        $this->assertCount(0, $validation->validate(['age' => 21]));
-        $this->assertCount(1, $validation->validate(['age' => 10]));
+        $this->assertCount(0, $this->nativeValidate($validation, ['age' => 21]));
+        $this->assertCount(1, $this->nativeValidate($validation, ['age' => 10]));
     }
 
     public function testRegistryRuleSkipsEmptyValuesAndUsesIndexedParams(): void
     {
         $validation = PhalconValidationAdapter::build(['code' => 'starts,ab']);
 
-        $this->assertCount(0, $validation->validate(['code' => '']));
-        $this->assertCount(0, $validation->validate(['code' => 'abc']));
+        $this->assertCount(0, $this->nativeValidate($validation, ['code' => '']));
+        $this->assertCount(0, $this->nativeValidate($validation, ['code' => 'abc']));
 
-        $messages = $validation->validate(['code' => 'xyz']);
+        $messages = $this->nativeValidate($validation, ['code' => 'xyz']);
         $this->assertCount(1, $messages);
         $this->assertStringContainsString('ab', (string) $messages[0]->getMessage());
     }
