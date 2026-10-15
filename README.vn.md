@@ -1,0 +1,596 @@
+# Phalcon Validation (Tài liệu Tiếng Việt)
+
+[📖 English Documentation](README.md)
+
+[![Latest Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/phatnt93/phalcon-validation)
+[![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-8892BF.svg)](https://php.net)
+[![Phalcon Support](https://img.shields.io/badge/phalcon-v5%20%7C%20v6-green.svg)](https://phalcon.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+Thư viện PHP Data Validation & Sanitization hiệu năng cao, cú pháp ngắn gọn, trực quan cho **Phalcon Framework v5 & v6**, lấy cảm hứng từ phong cách của [Wixel/GUMP](https://github.com/Wixel/GUMP) và tích hợp cùng [Phalcon\Filter\Validation](https://docs.phalcon.io/5.22/filter-validation).
+
+---
+
+## Mục lục
+
+1. [Tại sao nên dùng thư viện này?](#1-tại-sao-nên-dùng-thư-viện-này)
+2. [Kiến Trúc và Hai Luồng Thực Thi Chính](#2-kiến-trúc-và-hai-luồng-thực-thi-chính)
+3. [Yêu cầu hệ thống](#3-yêu-cầu-hệ-thống)
+4. [Cài đặt qua Composer](#4-cài-đặt-qua-composer)
+5. [Hướng Dẫn Sử Dụng Chi Tiết](#5-hướng-dẫn-sử-dụng-chi-tiết)
+   - [Cách 1: Static Shorthand 1 dòng](#cách-1-static-shorthand-1-dòng)
+   - [Cách 2: Instance Fluent API chuẩn phong cách GUMP](#cách-2-instance-fluent-api-chuẩn-phong-cách-gump)
+   - [Cách 3: Tích hợp vào Phalcon Controller qua DI Container](#cách-3-tích-hợp-vào-phalcon-controller-qua-di-container)
+   - [Cách 4: Chuyển đổi sang Phalcon Native Validation Object](#cách-4-chuyển-đổi-sang-phalcon-native-validation-object)
+6. [Xử lý Mảng Lồng Nhau và Wildcard](#6-xử-lý-mảng-lồng-nhau-và-wildcard)
+7. [Tên Trường Thân Thiện và Đa Ngôn Ngữ](#7-tên-trường-thân-thiện-và-đa-ngôn-ngữ)
+8. [Kiểm Tra Database ORM (Unique và Exists)](#8-kiểm-tra-database-orm-unique-và-exists)
+9. [Bảng Tra Cứu 16 Bộ Lọc Dữ Liệu (Filters)](#9-bảng-tra-cứu-16-bộ-lọc-dữ-liệu-filters)
+10. [Bảng Tra Cứu 76 Bộ Kiểm Tra Hợp Lệ (Validators)](#10-bảng-tra-cứu-76-bộ-kiểm-tra-hợp-lệ-validators)
+11. [Tự Viết Custom Validator và Custom Filter](#11-tự-viết-custom-validator-và-custom-filter)
+12. [Kiểm thử tự động](#12-kiểm-thử-tự-động)
+13. [Hướng dẫn xuất bản lên Packagist](#13-hướng-dẫn-xuất-bản-lên-packagist)
+
+---
+
+## 1. Tại Sao Nên Dùng Thư Viện Này?
+
+Trong tài liệu chính thức của Phalcon 5 ([docs.phalcon.io/5.22/filter-validation](https://docs.phalcon.io/5.22/filter-validation)), việc cấu hình validation yêu cầu khởi tạo đối tượng và gắn từng validator class rất dài dòng:
+
+### 🔴 Cách truyền thống trong Phalcon 5 Native (Rất dài dòng):
+```php
+use Phalcon\Filter\Validation;
+use Phalcon\Filter\Validation\Validator\PresenceOf;
+use Phalcon\Filter\Validation\Validator\Email;
+use Phalcon\Filter\Validation\Validator\StringLength;
+use Phalcon\Filter\Validation\Validator\Alnum;
+
+$validation = new Validation();
+$validation->add('username', new PresenceOf(['message' => 'Username is required']));
+$validation->add('username', new Alnum(['message' => 'Username must be alphanumeric']));
+$validation->add('username', new StringLength(['min' => 3, 'max' => 30]));
+
+$validation->add('email', new PresenceOf(['message' => 'Email is required']));
+$validation->add('email', new Email(['message' => 'Email is invalid']));
+
+// Lọc dữ liệu (sanitizing) lại phải khởi tạo một service Filter riêng biệt:
+$filter = (new \Phalcon\Filter\FilterFactory())->newInstance();
+$data['username'] = $filter->sanitize($_POST['username'], 'trim');
+$data['email']    = $filter->sanitize($_POST['email'], 'email');
+
+$messages = $validation->validate($data);
+```
+
+### 🟢 Với `phalcon-validation` (Gọn gàng trong 1 nốt nhạc):
+```php
+use PhalconValidation\PhalconValidation;
+
+$cleanData = PhalconValidation::run($_POST, [
+    'username' => 'required|alpha_numeric|min_len,3|max_len,30',
+    'email'    => 'required|valid_email',
+], [
+    'username' => 'trim|lower_case',
+    'email'    => 'trim|lower_case|sanitize_email',
+]);
+
+if ($cleanData === false) {
+    // Có lỗi, lấy danh sách lỗi
+} else {
+    // Dữ liệu đã được LÀM SẠCH và HỢP LỆ!
+}
+```
+
+---
+
+## 2. Kiến Trúc và Hai Luồng Thực Thi Chính
+
+Thư viện cung cấp **2 luồng thực thi tách bạch rõ ràng** tùy theo nhu cầu của ứng dụng:
+
+```
+                                [Khai Báo Rules & Data]
+                                           │
+                 ┌─────────────────────────┴─────────────────────────┐
+                 │                                                   │
+                 ▼                                                   ▼
+     [Luồng 1: Standard Engine]                          [Luồng 2: Native Bridge]
+   Validator::run(), Facade run()                    PhalconValidationAdapter::build()
+        và DI $this->validator                                      │
+                 │                                                   ▼
+         ┌───────┴───────┐                             Tạo Phalcon\Filter\Validation
+         ▼               ▼                                           │
+  4 Filters C-Native   76 Rules PHP                      ┌───────────┴───────────┐
+  (trim, lower, upper,  (Arr, Str, Wildcards,            ▼                       ▼
+   sanitize_email)      Fail-fast, i18n vi/en)    17 Rules C Native       59 Rules Mở Rộng
+                                                 (PresenceOf, Email,     (Bridge qua Phalcon
+                                                  StringLength,...)       Callback Validator)
+```
+
+### Luồng 1: Standard Engine (`Validator::run()`, `PhalconValidation::run()`, `$this->validator`)
+Đây là luồng mặc định khi gọi `run()`, `validate()`, hoặc thông qua DI container:
+- **Xử lý Validation:** Thực thi qua `RuleEngine` với 76 classes Rule của thư viện. Luồng này chuyên trách xử lý các tính năng nâng cao mà Phalcon C-core không tích hợp sẵn:
+  - Duyệt mảng đa chiều dot-notation (`customer.profile.email`).
+  - Mở rộng wildcard tự động (`items.*.price`, `order_items.*.qty`).
+  - Dừng kiểm tra ngay khi gặp lỗi đầu tiên của trường (fail-fast per field).
+  - Tự động bỏ qua các trường không required khi để trống (optional field handling).
+  - Ánh xạ tên trường thân thiện (Field Aliases) và dịch thông báo lỗi song ngữ (`vi`, `en`).
+- **Tự động kích hoạt C-Extension Sanitizer:** Trong luồng lọc dữ liệu (`FilterEngine`), **4 filters** có hành vi hoàn toàn tương đồng với C-core của Phalcon (`trim`, `lower_case`, `upper_case`, `sanitize_email`) sẽ **tự động gọi C-engine `Phalcon\Filter\Filter`** để đạt tốc độ tối đa!
+- **Tự động gọi Phalcon MVC Model:** 2 rules `unique` và `exists` tự động gọi Phalcon MVC Model (`$modelClass::count(...)`).
+
+### Luồng 2: Phalcon Native Bridge (`PhalconValidationAdapter::build()`)
+Luồng này **chỉ được kích hoạt khi bạn gọi rõ ràng** `PhalconValidationAdapter::build($rules)`. Nó biến toàn bộ chuỗi rules thành một đối tượng **`Phalcon\Filter\Validation`** C-extension native của Phalcon:
+- **17 Rules được thực thi bằng class C-Validator native của Phalcon:**
+  `required` (`PresenceOf`), `valid_email` (`Email`), `valid_url` (`Url`), `valid_ip`/`ipv4`/`ipv6` (`Ip`), `min_len`/`max_len`/`exact_len`/`between_len` (`StringLength`), `alpha` (`Alpha`), `alpha_numeric` (`Alnum`), `numeric` (`Numericality`), `integer` (`Digit`), `between_numeric` (`Between`), `equalsfield` (`Confirmation`), `contains` (`InclusionIn`), `doesnt_contain_list` (`ExclusionIn`), `date` (`Date`), `regex` (`Regex`), `required_file` (`File`).
+- **59 Rules mở rộng được bridge qua `Phalcon\Filter\Validation\Validator\Callback`:**
+  Các rule nâng cao như `strong_password`, `uuid`, `jwt_token`, `iban`, `even`, `odd`, `prime`, `word_count`, `valid_name`,... tự động được đóng gói vào Callback validator native của Phalcon. Nhờ đó, **không có bất kỳ rule nào bị drop âm thầm**, toàn bộ 76 rules đều được thực thi bảo mật và sinh thông báo lỗi chuẩn qua Translator.
+- **Bắt lỗi cấu hình:** Nếu rule không tồn tại trong hệ thống, adapter sẽ ném ngay ngoại lệ `RuleNotFoundException`.
+
+---
+
+## 3. Yêu Cầu Hệ Thống
+
+- **PHP:** `>= 8.1` (tương thích hoàn toàn PHP 8.1, 8.2, 8.3, 8.4)
+- **Phalcon Extension:** `ext-phalcon: ^5.0 || ^6.0` (được khuyến nghị để kích hoạt native C)
+- **Extension PHP bổ trợ:** `mbstring` (xử lý Unicode UTF-8)
+
+---
+
+## 4. Cài Đặt Qua Composer
+
+Chạy lệnh composer:
+
+```bash
+composer require phatnt93/phalcon-validation
+```
+
+---
+
+## 5. Hướng Dẫn Sử Dụng Chi Tiết
+
+### Cách 1: Static Shorthand 1 dòng
+
+Thích hợp cho API Controllers hoặc Micro Applications cần xử lý nhanh gọn:
+
+```php
+use PhalconValidation\PhalconValidation;
+
+$data = [
+    'username' => '  admin_pro  ',
+    'email'    => 'ADMIN@EXAMPLE.COM',
+    'age'      => '25',
+];
+
+$rules = [
+    'username' => 'required|alpha_dash|min_len,3|max_len,20',
+    'email'    => 'required|valid_email',
+    'age'      => 'numeric|between_numeric,18;65',
+];
+
+$filters = [
+    'username' => 'trim|lower_case',
+    'email'    => 'trim|lower_case|sanitize_email',
+];
+
+// Thực hiện lọc và validate:
+$clean = PhalconValidation::run($data, $rules, $filters);
+
+if ($clean === false) {
+    echo "Dữ liệu không hợp lệ!";
+} else {
+    // $clean chứa dữ liệu đã làm sạch:
+    // ['username' => 'admin_pro', 'email' => 'admin@example.com', 'age' => '25']
+    echo "Chào mừng, " . $clean['username'];
+}
+```
+
+Kiểm tra nhanh đúng/sai (Boolean check):
+
+```php
+$isValid = PhalconValidation::isValid($_POST, [
+    'title' => 'required|min_len,5',
+    'slug'  => 'required|url_slug',
+]);
+
+if ($isValid === true) {
+    echo "Dữ liệu hợp lệ!";
+} else {
+    // $isValid là mảng chứa danh sách câu thông báo lỗi
+    print_r($isValid);
+}
+```
+
+---
+
+### Cách 2: Instance Fluent API Chuẩn Phong Cách GUMP
+
+Hỗ trợ đầy đủ các phương thức quen thuộc của GUMP:
+
+```php
+use PhalconValidation\Validator;
+
+$validator = new Validator('vi'); // Khởi tạo với ngôn ngữ Tiếng Việt ('vi') hoặc Tiếng Anh ('en')
+
+// 1. Khai báo rules
+$validator->validation_rules([
+    'username' => 'required|alpha_numeric|min_len,3|max_len,30',
+    'password' => 'required|strong_password',
+    'confirm'  => 'required|equalsfield,password',
+]);
+
+// 2. Khai báo filters
+$validator->filter_rules([
+    'username' => 'trim|lower_case',
+]);
+
+// 3. Thực thi (có cờ $check_fields kiểm tra trường lạ)
+$clean = $validator->run($_POST, $check_fields = true);
+
+if ($clean === false) {
+    // Lấy lỗi dạng mảng kết hợp: ['username' => 'Trường Username bắt buộc...']
+    $errorsArray = $validator->get_errors_array();
+
+    // Hoặc lấy lỗi dạng danh sách HTML <ul><li>:
+    echo $validator->get_readable_errors(true);
+} else {
+    // Lưu vào database...
+}
+```
+
+---
+
+### Cách 3: Tích hợp vào Phalcon Controller qua DI Container
+
+Đăng ký Service Provider một lần trong file bootstrap của ứng dụng Phalcon:
+
+```php
+use Phalcon\Di\FactoryDefault;
+use PhalconValidation\Adapters\Phalcon\ValidationServiceProvider;
+
+$di = new FactoryDefault();
+// Đăng ký service 'validator':
+$di->register(new ValidationServiceProvider());
+```
+
+Sử dụng trực tiếp trong bất kỳ Controller nào:
+
+```php
+namespace App\Controllers;
+
+use Phalcon\Mvc\Controller;
+
+class AuthController extends Controller
+{
+    public function registerAction()
+    {
+        // Truy xuất service validator từ DI container:
+        $validator = $this->validator; // hoặc $this->di->getShared('validator')
+
+        $data = $validator->run($this->request->getPost(), [
+            'username' => 'required|alpha_numeric|min_len,3|unique:App\Models\Users,username',
+            'email'    => 'required|valid_email|unique:App\Models\Users,email',
+            'password' => 'required|strong_password',
+        ], [
+            'username' => 'trim|lower_case',
+            'email'    => 'trim|lower_case|sanitize_email',
+        ]);
+
+        if ($data === false) {
+            $this->flash->error($validator->get_readable_errors(true));
+            return $this->response->redirect('/register');
+        }
+
+        // Tạo user mới từ dữ liệu sạch:
+        $user = new \App\Models\Users();
+        $user->assign($data);
+        $user->save();
+    }
+}
+```
+
+---
+
+### Cách 4: Chuyển đổi sang Phalcon Native Validation Object
+
+Nếu bạn cần một instance chuẩn của `Phalcon\Filter\Validation` để tích hợp với Model Validation hoặc các service khác của Phalcon:
+
+```php
+use PhalconValidation\Adapters\Phalcon\PhalconValidationAdapter;
+
+$rules = [
+    'email'    => 'required|valid_email|min_len,5',
+    'password' => 'required|strong_password', // Tự động bridge qua Callback validator native
+];
+
+// Build ra instance của Phalcon\Filter\Validation:
+$nativeValidation = PhalconValidationAdapter::build($rules);
+
+// Thực thi kiểm tra bằng Phalcon C-engine:
+$messages = $nativeValidation->validate($_POST);
+
+if (count($messages) > 0) {
+    foreach ($messages as $message) {
+        echo $message->getMessage() . '<br>';
+    }
+}
+```
+
+---
+
+## 6. Xử Lý Mảng Lồng Nhau và Wildcard
+
+Hỗ trợ kiểm tra cấu trúc JSON hoặc mảng nhiều cấp cực kỳ đơn giản:
+
+```php
+$data = [
+    'customer' => [
+        'name' => 'Nguyễn Văn A',
+        'email' => 'a@gmail.com',
+    ],
+    'items' => [
+        ['product_id' => 101, 'qty' => 2, 'price' => 50000],
+        ['product_id' => 102, 'qty' => 1, 'price' => 120000],
+    ],
+];
+
+$rules = [
+    'customer.name'       => 'required|min_len,2',
+    'customer.email'      => 'required|valid_email',
+    'items.*.product_id'  => 'required|integer',
+    'items.*.qty'         => 'required|integer|min_numeric,1',
+    'items.*.price'       => 'required|numeric|min_numeric,0',
+];
+
+$filters = [
+    'customer.name'  => 'trim',
+    'customer.email' => 'trim|lower_case',
+];
+
+$clean = PhalconValidation::run($data, $rules, $filters);
+```
+
+---
+
+## 7. Tên Trường Thân Thiện và Đa Ngôn Ngữ
+
+### 7.1. Chọn ngôn ngữ hiển thị
+Thư viện tích hợp sẵn 2 gói ngôn ngữ chuẩn:
+- `vi`: Tiếng Việt
+- `en`: Tiếng Anh (mặc định)
+
+```php
+$validator = new Validator('vi'); // Tiếng Việt
+```
+
+### 7.2. Đặt Alias tên trường
+Thay vì thông báo lỗi hiển thị tên trường kỹ thuật (`items.1.price`), bạn có thể đặt tên thân thiện:
+
+```php
+$validator->setFieldNames([
+    'customer.email'     => 'Địa chỉ email khách hàng',
+    'items.*.price'      => 'Đơn giá sản phẩm',
+    'items.*.qty'        => 'Số lượng mua',
+]);
+```
+Khi có lỗi, câu thông báo sẽ là: *`Trường Đơn giá sản phẩm phải có giá trị lớn hơn hoặc bằng 0.`*
+
+### 7.3. Tùy biến câu thông báo lỗi
+```php
+$validator->set_fields_error_messages([
+    'customer.email' => [
+        'required'    => 'Vui lòng cung cấp email của bạn.',
+        'valid_email' => 'Địa chỉ email này không hợp lệ.',
+    ],
+]);
+```
+
+---
+
+## 8. Kiểm Tra Database ORM (Unique và Exists)
+
+Tích hợp trực tiếp với Phalcon MVC Models:
+
+- **`unique,ModelClass,column,[ignoreIdCol],[ignoreIdVal]`**: Kiểm tra dữ liệu không bị trùng trong Database.
+- **`exists,ModelClass,column`**: Kiểm tra khóa ngoại / dữ liệu bắt buộc phải tồn tại trong Database.
+
+Ví dụ:
+```php
+$rules = [
+    // Kiểm tra username chưa tồn tại trong bảng Users:
+    'username' => 'required|unique:App\Models\Users,username',
+
+    // Khi cập nhật thông tin User có ID = 15, bỏ qua chính user đó:
+    'email'    => 'required|valid_email|unique:App\Models\Users,email,id,15',
+
+    // Kiểm tra category_id phải tồn tại trong bảng Categories cột id:
+    'category_id' => 'required|exists:App\Models\Categories,id',
+];
+```
+
+---
+
+## 9. Bảng Tra Cứu 16 Bộ Lọc Dữ Liệu (Filters)
+
+| Tên Filter | Mô tả hành vi | Ví dụ |
+|---|---|---|
+| `trim` | Cắt bỏ khoảng trắng ở đầu và cuối chuỗi (sử dụng Phalcon native C). | `'  abc  '` -> `'abc'` |
+| `sanitize_string` | Xóa thẻ `<script>` và làm sạch HTML chống XSS. | `'<script>bad</script><b>Hi</b>'` -> `'Hi'` |
+| `sanitize_email` | Xóa mọi ký tự không hợp lệ trong email (sử dụng Phalcon native C). | `'john @ex .com'` -> `'john@ex.com'` |
+| `sanitize_numbers` | Chỉ giữ lại chữ số `0-9`, dấu `+` và `-`. | `'+84-90-123'` -> `'+84-90-123'` |
+| `sanitize_floats` | Chỉ giữ lại chữ số, dấu `+`, `-`, và dấu chấm `.`. | `'Price: $12.50'` -> `'12.50'` |
+| `boolean` | Chuyển đổi `['1', 1, 'true', true, 'yes', 'on']` thành `true`, còn lại `false`. | `'on'` -> `true`, `'no'` -> `false` |
+| `basic_tags` | Giữ lại các thẻ HTML cơ bản an toàn (`<b>`, `<i>`, `<p>`), xóa thẻ độc hại. | `'<p><b>OK</b><script></script></p>'` -> `'<p><b>OK</b></p>'` |
+| `whole_number` | Ép kiểu thành số nguyên bằng `intval()` (giữ nguyên âm). | `'42.8'` -> `42`, `'-15.5'` -> `-15` |
+| `ms_word_characters`| Chuyển ký tự đặc biệt của MS Word sang web-safe chuẩn. | `“Hello”` -> `"Hello"`, `‘It’` -> `'It'` |
+| `lower_case` | Chuyển chuỗi sang chữ thường UTF-8 (Phalcon native C). | `'XIN CHÀO'` -> `'xin chào'` |
+| `upper_case` | Chuyển chuỗi sang chữ hoa UTF-8 (Phalcon native C). | `'xin chào'` -> `'XIN CHÀO'` |
+| `slug` | Chuyển chuỗi thành URL slug chuẩn tiếng Việt có dấu. | `'Tiêu Đề Bài Viết'` -> `'tieu-de-bai-viet'` |
+| `urlencode` | Mã hóa chuỗi URL theo chuẩn `urlencode()`. | `'a b!'` -> `'a+b%21'` |
+| `htmlencode` | Chuyển ký tự HTML sang HTML entities. | `'<b>"Hi"</b>'` -> `'&lt;b&gt;&quot;Hi&quot;&lt;/b&gt;'` |
+| `rmpunctuation` | Loại bỏ toàn bộ các dấu câu khỏi chuỗi. | `'Hello, World!'` -> `'Hello World'` |
+| `noise_words` | Loại bỏ các từ dừng (stop-words/noise words). | `'the quick brown fox'` -> `'quick brown fox'` |
+
+---
+
+## 10. Bảng Tra Cứu 76 Bộ Kiểm Tra Hợp Lệ (Validators)
+
+### 10.1. Nhóm Bắt buộc & Hiện diện
+- **`required`**: Giá trị bắt buộc phải có mặt và không rỗng (khác `null`, `""`, `[]`).
+- **`required_file`**: Tệp tin bắt buộc phải tải lên không có mã lỗi `UPLOAD_ERR_OK`.
+
+### 10.2. Nhóm Chuỗi & Độ dài
+- **`min_len,n`**: Độ dài chuỗi tối thiểu `n` ký tự.
+- **`max_len,n`**: Độ dài chuỗi tối đa `n` ký tự.
+- **`exact_len,n`**: Độ dài chuỗi chính xác bằng `n` ký tự.
+- **`between_len,min;max`**: Độ dài chuỗi trong khoảng từ `min` đến `max`.
+- **`word_count,min,val1,max,val2`**: Số lượng từ trong chuỗi trong khoảng cho phép.
+
+### 10.3. Nhóm Ký tự & Quy ước đặt tên
+- **`alpha`**: Chỉ chứa chữ cái (`a-z`, `A-Z`, ký tự chữ cái Unicode).
+- **`alpha_numeric`**: Chỉ chứa chữ cái và số.
+- **`alpha_dash`**: Chỉ chứa chữ cái, gạch ngang `-` và gạch dưới `_`.
+- **`alpha_numeric_dash`**: Chữ cái, số, gạch ngang `-` và gạch dưới `_`.
+- **`alpha_numeric_space`**: Chữ cái, số và khoảng trắng.
+- **`alpha_space`**: Chữ cái và khoảng trắng.
+- **`camel_case`**: Chuỗi theo định dạng `camelCase`.
+- **`snake_case`**: Chuỗi theo định dạng `snake_case`.
+- **`url_slug`**: Chuỗi theo định dạng URL slug.
+
+### 10.4. Nhóm Số học & Toán học
+- **`numeric`**: Giá trị là số hợp lệ hoặc chuỗi số (`is_numeric`).
+- **`integer`**: Giá trị là số nguyên.
+- **`float`**: Giá trị là số thực.
+- **`boolean,[strict]`**: Giá trị boolean (`yes/no`, `1/0`, `true/false`; strict chỉ nhận boolean).
+- **`min_numeric,n`**: Giá trị số >= `n`.
+- **`max_numeric,n`**: Giá trị số <= `n`.
+- **`even`**: Số chẵn.
+- **`odd`**: Số lẻ.
+- **`prime`**: Số nguyên tố.
+- **`starts,prefix`**: Bắt đầu bằng tiền tố `prefix`.
+
+### 10.5. Nhóm So sánh & Regex
+- **`equalsfield,target_field`**: Trùng khớp với giá trị của trường khác (xác nhận mật khẩu).
+- **`regex,pattern`**: Khớp biểu thức chính quy Regex (ví dụ: `regex,/^\d{4}$/`).
+
+### 10.6. Nhóm Mạng, Web & Internet
+- **`valid_email`**: Định dạng email hợp lệ.
+- **`valid_url`**: Địa chỉ URL hợp lệ (`http://` hoặc `https://`).
+- **`url_exists`**: URL sống và phản hồi HTTP 200/301/302.
+- **`valid_ip`**: Địa chỉ IP hợp lệ (IPv4 hoặc IPv6).
+- **`valid_ipv4`**: Địa chỉ IPv4 hợp lệ.
+- **`valid_ipv6`**: Địa chỉ IPv6 hợp lệ.
+- **`mac_address`**: Địa chỉ MAC card mạng hợp lệ.
+- **`domain_name`**: Tên miền Internet hợp lệ (không kèm giao thức).
+- **`port_number`**: Cổng mạng hợp lệ (1 đến 65535).
+- **`social_handle`**: Handle mạng xã hội hợp lệ (ví dụ: `@username`).
+- **`valid_name`**: Họ tên người hợp lệ (Unicode, dấu cách, dấu gạch nối).
+
+### 10.7. Nhóm Ngày tháng & Thời gian
+- **`date,[format]`**: Ngày tháng hợp lệ (mặc định ISO hoặc format tùy chọn `Y-m-d`).
+- **`date_range,start;end`**: Ngày nằm trong khoảng từ `start` đến `end`.
+- **`future_date`**: Ngày trong tương lai.
+- **`past_date`**: Ngày trong quá khứ.
+- **`business_day`**: Ngày làm việc trong tuần (Thứ Hai đến Thứ Sáu).
+- **`valid_time`**: Định dạng giờ phút giây (`HH:MM:SS` hoặc `HH:MM`).
+- **`min_age,years`**: Tuổi tính từ ngày sinh >= số năm chỉ định.
+
+### 10.8. Nhóm Vị trí & Địa lý
+- **`latitude`**: Vĩ độ hợp lệ (-90 đến 90).
+- **`longitude`**: Kinh độ hợp lệ (-180 đến 180).
+- **`coordinates`**: Tọa độ hợp lệ theo định dạng `lat,lng`.
+- **`postal_code`**: Mã bưu chính hợp lệ.
+- **`street_address`**: Nhận diện cấu trúc địa chỉ đường phố.
+
+### 10.9. Nhóm Chuẩn ISO
+- **`country_code`**: Mã quốc gia ISO 3166-1 alpha-2 hoặc alpha-3.
+- **`currency_code`**: Mã tiền tệ ISO 4217 (USD, VND, EUR,...).
+- **`language_code`**: Mã ngôn ngữ ISO 639 (en, vi, fr,...).
+- **`timezone`**: Tên múi giờ hợp lệ (`Asia/Ho_Chi_Minh`, `UTC`,...).
+
+### 10.10. Nhóm Mã hóa, Bảo mật & Tài chính
+- **`valid_cc`**: Số thẻ tín dụng hợp lệ (thuật toán Luhn).
+- **`iban`**: Mã tài khoản ngân hàng quốc tế IBAN.
+- **`uuid`**: Chuỗi UUID hợp lệ.
+- **`guidv4`**: Chuỗi GUID phiên bản 4 hợp lệ.
+- **`jwt_token`**: Chuỗi JWT token hợp lệ.
+- **`hash,algo`**: Chuỗi mã băm (md5, sha1, sha256,...).
+- **`base64`**: Chuỗi dữ liệu mã hóa Base64 hợp lệ.
+- **`strong_password`**: Mật khẩu mạnh (chữ hoa, chữ thường, số, ký tự đặc biệt, độ dài >= 8).
+- **`no_sql_injection`**: Phát hiện các mẫu tấn công SQL Injection.
+- **`no_xss`**: Phát hiện các mẫu tấn công XSS.
+- **`phone_number`**: Số điện thoại hợp lệ.
+
+### 10.11. Nhóm Màu sắc
+- **`hex_color`**: Mã màu Hexadecimal (`#FFFFFF`, `#FFF`, FFFFFF).
+- **`rgb_color`**: Mã màu RGB/RGBA với các kênh giới hạn từ 0 đến 255.
+
+### 10.12. Nhóm Nội dung, Mảng & JSON
+- **`contains,v1;v2`**: Thuộc danh sách cho phép (hiển thị danh sách trong lỗi).
+- **`contains_list,v1;v2`**: Thuộc danh sách cho phép (ẩn danh sách trong lỗi).
+- **`doesnt_contain_list,v1;v2`**: Không thuộc danh sách cấm.
+- **`valid_json_string`**: Chuỗi JSON hợp lệ.
+- **`valid_array_size_equal,n`**: Mảng có chính xác `n` phần tử.
+- **`valid_array_size_greater,n`**: Mảng có ít nhất `n` phần tử.
+- **`valid_array_size_lesser,n`**: Mảng có tối đa `n` phần tử.
+
+### 10.13. Nhóm Tệp tin Tải lên
+- **`extension,ext1;ext2`**: Phần mở rộng tệp tin hợp lệ (`pdf;docx;png`).
+
+---
+
+## 11. Tự Viết Custom Validator và Custom Filter
+
+### Thêm Custom Validator
+```php
+use PhalconValidation\Validator;
+
+Validator::add_validator('is_divisible_by', function ($field, $value, $params, $data) {
+    $divisor = (int)($params[0] ?? 1);
+    return is_numeric($value) && ((int)$value % $divisor === 0);
+}, 'Trường {field} phải chia hết cho {param:0}.');
+
+// Sử dụng trong rule:
+$rules = ['score' => 'required|is_divisible_by,5'];
+```
+
+### Thêm Custom Filter
+```php
+use PhalconValidation\Validator;
+
+Validator::add_filter('prefix', function ($value, $params) {
+    $prefix = $params[0] ?? 'PREFIX_';
+    return $prefix . $value;
+});
+
+// Sử dụng trong filter:
+$filters = ['code' => 'prefix,ORDER_'];
+```
+
+---
+
+## 12. Kiểm Thử Tự Động
+
+Thư viện được kiểm thử tự động với bộ test suite PHPUnit gồm 54 bài kiểm thử và 152 assertions:
+
+```bash
+# Chạy toàn bộ test suite
+composer test
+
+# Hoặc qua PHPUnit CLI trực tiếp
+php vendor/bin/phpunit
+```
+
+---
+
+## 13. Hướng Dẫn Xuất Bản Lên Packagist
+
+Để phân phối thư viện này cho cộng đồng cài đặt qua Composer:
+1. Đẩy mã nguồn lên GitHub: `https://github.com/phatnt93/phalcon-validation`.
+2. Tạo release tag: `git tag v1.0.0 && git push origin v1.0.0`.
+3. Đăng nhập [Packagist.org](https://packagist.org/packages/submit) và submit URL repo.
+4. Bất kỳ ai cũng có thể tải về qua lệnh: `composer require phatnt93/phalcon-validation`.
+
+---
+
+## Giấy Phép (License)
+
+Thư viện được phát hành dưới giấy phép mã nguồn mở [MIT License](LICENSE).
+Tác giả: **Phat Nguyen** (phatnt93@gmail.com).
