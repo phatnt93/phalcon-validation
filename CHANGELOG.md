@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `between_numeric,min;max` rule (inclusive range). It was already documented and mapped by the Phalcon adapter but missing from the rule registry, so using it threw `RuleNotFoundException`.
+- `url_exists,allow_private` parameter to opt out of the private/reserved address check.
 - `Translator::addTranslations()` and `Validator::addTranslations()` to register or override messages for any locale (e.g. `fr`) without modifying the library.
 - `Translator::DEFAULT_LOCALE` (`en`) and `Translator::SUPPORTED_LOCALES` (`en`, `vi`) constants.
 - Regional locales (e.g. `vi_VN`) fall back to their base language dictionary before `en`.
@@ -17,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.gitattributes` (dist archives exclude tests, docs, examples and tooling), `.editorconfig`, `CONTRIBUTING.md`, `AGENTS.md`, `CHANGELOG.md`.
 - CI quality job (composer validate, code style, static analysis, coverage) and a `lowest`/`highest` dependency matrix.
 - CI coverage gate: the quality job fails when line coverage drops below 90% (`tests/coverage-check.php`).
-- Test suite expanded to 310 tests (line coverage 74.4% → 98.5%): file rule edge cases, `normalize_files`, core engine, Phalcon adapter mappings and a non-scalar input sweep over every rule and filter.
+- Test suite expanded to 374 tests (line coverage 74.4% → 98.5%): file rule edge cases, `normalize_files`, core engine, Phalcon adapter mappings and a non-scalar input sweep over every rule and filter.
 
 ### Changed
 - Locale codes are normalized (`EN` → `en`, `en-us` → `en_US`).
@@ -26,12 +28,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `composer.json`: `php` constraint simplified to `^8.1`; removed `optimize-autoloader` (no effect for libraries).
 
 ### Fixed
+- `date` without a format no longer accepts any string `strtotime()` understands (e.g. `a`, `1.5`, `now`, `next monday`). It now requires an ISO 8601 calendar date (`Y-m-d`, `Y-m-d H:i[:s]`, `Y-m-d\TH:i[:s]` with optional offset or `Z`) and rejects overflowing dates such as `2024-02-30`. **Behaviour change:** use `date,<format>` for other formats.
+- Documentation (README, `llms.txt`, `llms-full.txt`) showed the ORM rules as `unique:Model,column` / `exists:Model,column`, which throws `RuleNotFoundException`; the correct syntax is `unique,Model,column,...` / `exists,Model,column`.
 - String-based rules (`min_len`, `max_len`, `exact_len`, `between_len`, `word_count`, `starts`, `date_range`, `future_date`, `past_date`, `business_day`, `min_age`, `valid_cc`, `iban`, `contains`, `contains_list`, `doesnt_contain_list`) now fail on array/object input instead of raising PHP warnings or `Error`s. Previously an array was cast to the string `"Array"`, so e.g. `min_len,3` passed for `field[]=x`.
 - `sanitize_numbers` and `sanitize_floats` return non-scalar input unchanged and `whole_number` returns `0` for arrays/objects instead of raising errors.
 - Static GUMP setters (`Validator::set_field_name()`, `set_field_names()`, `set_error_message()`, `set_error_messages()`) now apply to every `Validator` instance and to `Validator::is_valid()`. Previously they only updated an internal global translator that instances never read. Instance-level settings still take precedence. `Translator` gained an optional `?Translator $parent` constructor argument to support this.
 - Phalcon adapter: `valid_ip`, `valid_ipv4` and `valid_ipv6` now match the pure-PHP rules. The native `Ip` validator received `4`/`6` instead of `Ip::VERSION_4`/`Ip::VERSION_6`, so `valid_ipv4` accepted IPv6 addresses (and vice versa), and private/reserved addresses (e.g. `10.0.0.1`, `127.0.0.1`) were rejected.
 
 ### Security
+- **Behaviour change:** `url_exists` is hardened against SSRF and slow responses: only `http`/`https` URLs are accepted, hosts resolving to private or reserved addresses (e.g. `127.0.0.1`, `10.0.0.0/8`, `169.254.169.254`) are rejected unless `allow_private` is given, redirects are not followed (a 3xx response counts as reachable), a HEAD request with a 5 second timeout is used, and the status code is parsed from the status line instead of searching for `200` anywhere in it.
 - **Behaviour change:** `mimetype` / `mime_type` no longer trusts the client-provided Content-Type (`type` key or `getType()`). The MIME type is always detected from the real file content on disk (`finfo`) or `Phalcon\Http\Request\File::getRealType()`. Files whose temp file is missing now fail instead of falling back to the spoofable client type. Native `$_FILES` multiple uploads are iterated by `tmp_name`.
 - Malformed locale codes (e.g. `../../etc/passwd`) now throw `InvalidLocaleException`, and only shipped locales are loaded from disk. Previously the locale string was concatenated into a `require` path.
 

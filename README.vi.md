@@ -268,8 +268,8 @@ class AuthController extends Controller
         $validator = $this->validator; // hoặc $this->di->getShared('validator')
 
         $data = $validator->run($this->request->getPost(), [
-            'username' => 'required|alpha_numeric|min_len,3|unique:App\Models\Users,username',
-            'email'    => 'required|valid_email|unique:App\Models\Users,email',
+            'username' => 'required|alpha_numeric|min_len,3|unique,App\Models\Users,username',
+            'email'    => 'required|valid_email|unique,App\Models\Users,email',
             'password' => 'required|strong_password',
         ], [
             'username' => 'trim|lower_case',
@@ -412,13 +412,13 @@ Ví dụ:
 ```php
 $rules = [
     // Kiểm tra username chưa tồn tại trong bảng Users:
-    'username' => 'required|unique:App\Models\Users,username',
+    'username' => 'required|unique,App\Models\Users,username',
 
     // Khi cập nhật thông tin User có ID = 15, bỏ qua chính user đó:
-    'email'    => 'required|valid_email|unique:App\Models\Users,email,id,15',
+    'email'    => 'required|valid_email|unique,App\Models\Users,email,id,15',
 
     // Kiểm tra category_id phải tồn tại trong bảng Categories cột id:
-    'category_id' => 'required|exists:App\Models\Categories,id',
+    'category_id' => 'required|exists,App\Models\Categories,id',
 ];
 ```
 
@@ -524,6 +524,7 @@ Mọi rule kiểm tra tệp tin đều tự động phân tích và tương thí
 - **`boolean,[strict]`**: Giá trị boolean (`yes/no`, `1/0`, `true/false`; strict chỉ nhận boolean).
 - **`min_numeric,n`**: Giá trị số >= `n`.
 - **`max_numeric,n`**: Giá trị số <= `n`.
+- **`between_numeric,min;max`**: Giá trị số nằm trong khoảng `min` đến `max` (bao gồm hai đầu).
 - **`even`**: Số chẵn.
 - **`odd`**: Số lẻ.
 - **`prime`**: Số nguyên tố.
@@ -536,7 +537,7 @@ Mọi rule kiểm tra tệp tin đều tự động phân tích và tương thí
 ### 11.6. Nhóm Mạng, Web & Internet
 - **`valid_email`**: Định dạng email hợp lệ.
 - **`valid_url`**: Địa chỉ URL hợp lệ (`http://` hoặc `https://`).
-- **`url_exists`**: URL sống và phản hồi HTTP 200/301/302.
+- **`url_exists,[allow_private]`**: URL `http`/`https` phản hồi request HEAD với mã 2xx/3xx (không đi theo redirect, timeout 5 giây). Để chống SSRF, host phân giải ra địa chỉ private hoặc reserved (`10.0.0.0/8`, `127.0.0.1`, `169.254.169.254`, ...) bị từ chối, trừ khi truyền `allow_private`. Rule gửi một request mạng cho mỗi giá trị, nên ưu tiên `valid_url` nếu không thật sự cần kiểm tra URL còn sống.
 - **`valid_ip`**: Địa chỉ IP hợp lệ (IPv4 hoặc IPv6).
 - **`valid_ipv4`**: Địa chỉ IPv4 hợp lệ.
 - **`valid_ipv6`**: Địa chỉ IPv6 hợp lệ.
@@ -547,7 +548,7 @@ Mọi rule kiểm tra tệp tin đều tự động phân tích và tương thí
 - **`valid_name`**: Họ tên người hợp lệ (Unicode, dấu cách, dấu gạch nối).
 
 ### 11.7. Nhóm Ngày tháng & Thời gian
-- **`date,[format]`**: Ngày tháng hợp lệ (mặc định ISO hoặc format tùy chọn `Y-m-d`).
+- **`date,[format]`**: Ngày tháng hợp lệ theo lịch. Khi không truyền format chỉ chấp nhận dạng ISO 8601 (`Y-m-d`, `Y-m-d H:i[:s]`, `Y-m-d\TH:i[:s]`, có thể kèm offset `+07:00`/`Z`); chuỗi tương đối như `now`, `tomorrow` bị từ chối. Khi có format (ví dụ `date,d/m/Y`) giá trị phải khớp chính xác.
 - **`date_range,start;end`**: Ngày nằm trong khoảng từ `start` đến `end`.
 - **`future_date`**: Ngày trong tương lai.
 - **`past_date`**: Ngày trong quá khứ.

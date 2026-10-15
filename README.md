@@ -267,8 +267,8 @@ class AuthController extends Controller
         $validator = $this->validator; // or $this->di->getShared('validator')
 
         $data = $validator->run($this->request->getPost(), [
-            'username' => 'required|alpha_numeric|min_len,3|unique:App\Models\Users,username',
-            'email'    => 'required|valid_email|unique:App\Models\Users,email',
+            'username' => 'required|alpha_numeric|min_len,3|unique,App\Models\Users,username',
+            'email'    => 'required|valid_email|unique,App\Models\Users,email',
             'password' => 'required|strong_password',
         ], [
             'username' => 'trim|lower_case',
@@ -411,13 +411,13 @@ Example:
 ```php
 $rules = [
     // Verify that username is unique in Users table:
-    'username' => 'required|unique:App\Models\Users,username',
+    'username' => 'required|unique,App\Models\Users,username',
 
     // When updating user with ID 15, ignore row with id=15:
-    'email'    => 'required|valid_email|unique:App\Models\Users,email,id,15',
+    'email'    => 'required|valid_email|unique,App\Models\Users,email,id,15',
 
     // Verify category_id exists in Categories table:
-    'category_id' => 'required|exists:App\Models\Categories,id',
+    'category_id' => 'required|exists,App\Models\Categories,id',
 ];
 ```
 
@@ -523,6 +523,7 @@ Every file validator automatically detects and validates:
 - **`boolean,[strict]`**: Boolean value (`yes/no`, `1/0`, `true/false`; strict requires boolean type).
 - **`min_numeric,n`**: Number >= `n`.
 - **`max_numeric,n`**: Number <= `n`.
+- **`between_numeric,min;max`**: Number between `min` and `max` (inclusive).
 - **`even`**: Number must be even.
 - **`odd`**: Number must be odd.
 - **`prime`**: Number must be prime.
@@ -535,7 +536,7 @@ Every file validator automatically detects and validates:
 ### 11.6. Network & Web
 - **`valid_email`**: Valid email address format.
 - **`valid_url`**: Valid URL format.
-- **`url_exists`**: Accessible web URL responding with 200/301/302.
+- **`url_exists,[allow_private]`**: `http`/`https` URL that answers a HEAD request with a 2xx/3xx status (redirects are not followed, 5 s timeout). To prevent SSRF, hosts resolving to private or reserved addresses (`10.0.0.0/8`, `127.0.0.1`, `169.254.169.254`, ...) are rejected unless `allow_private` is given. The rule sends a network request for every value, so prefer `valid_url` unless reachability really matters.
 - **`valid_ip`**: Valid IP address (IPv4 or IPv6).
 - **`valid_ipv4`**: Valid IPv4 address.
 - **`valid_ipv6`**: Valid IPv6 address.
@@ -546,7 +547,7 @@ Every file validator automatically detects and validates:
 - **`valid_name`**: Human name format.
 
 ### 11.7. Date & Time
-- **`date,[format]`**: Valid date (ISO 8601 or custom format e.g. `Y-m-d`).
+- **`date,[format]`**: Valid calendar date. Without a format only ISO 8601 values are accepted (`Y-m-d`, `Y-m-d H:i[:s]`, `Y-m-d\TH:i[:s]`, optional `+07:00`/`Z` offset); relative strings such as `now` or `tomorrow` are rejected. With a format (e.g. `date,d/m/Y`) the value must match it exactly.
 - **`date_range,start;end`**: Date between start and end.
 - **`future_date`**: Date in the future.
 - **`past_date`**: Date in the past.

@@ -194,7 +194,7 @@ Every file validator accepts:
 ### 5.6. Network & Web
 - `valid_email`: RFC-compliant email address (Phalcon native C).
 - `valid_url`: Valid URL format (Phalcon native C).
-- `url_exists`: URL is reachable via HTTP request.
+- `url_exists,[allow_private]`: http(s) URL answers a HEAD request with 2xx/3xx (no redirects, 5 s timeout). Hosts resolving to private/reserved IPs are rejected unless `allow_private` is given (SSRF protection). Sends a network request per value.
 - `valid_ip`: Valid IP address (Phalcon native C).
 - `valid_ipv4`: Valid IPv4 address.
 - `valid_ipv6`: Valid IPv6 address.
@@ -205,7 +205,7 @@ Every file validator accepts:
 - `valid_name`: Valid human personal name.
 
 ### 5.7. Date & Time
-- `date,[format]`: Valid date format (default: Y-m-d, Phalcon native C).
+- `date,[format]`: Valid calendar date. Default accepts ISO 8601 only (`Y-m-d`, `Y-m-d H:i[:s]`, `Y-m-d\TH:i[:s]` with optional `+07:00`/`Z`); relative strings like `now` are rejected. With a format the value must match it exactly.
 - `date_range,start;end`: Date falls within inclusive range.
 - `past_date`: Date strictly in the past.
 - `future_date`: Date strictly in the future.
@@ -253,8 +253,8 @@ Every file validator accepts:
 - `min_file_size,limit`: Min file size (`10kb`, bytes).
 
 ### 5.12. Phalcon Database ORM
-- `unique:ModelClass,column,[ignoreCol],[ignoreVal]`: Database uniqueness check.
-- `exists:ModelClass,column`: Database existence check.
+- `unique,ModelClass,column,[ignoreCol],[ignoreVal]`: Database uniqueness check.
+- `exists,ModelClass,column`: Database existence check.
 
 ---
 

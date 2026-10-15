@@ -25,6 +25,7 @@ return [
     'boolean' => 'The {field} field must be a boolean.',
     'min_numeric' => 'The {field} field must be a number greater than or equal to {param:0}.',
     'max_numeric' => 'The {field} field must be a number less than or equal to {param:0}.',
+    'between_numeric' => 'The {field} field must be a number between {param:0} and {param:1}.',
     'even' => 'The {field} field must be an even number.',
     'odd' => 'The {field} field must be an odd number.',
     'prime' => 'The {field} field must be a prime number.',

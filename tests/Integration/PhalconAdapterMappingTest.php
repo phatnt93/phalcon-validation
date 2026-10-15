@@ -135,6 +135,18 @@ class PhalconAdapterMappingTest extends TestCase
         $this->assertSame($expected, count($messages) === 0);
     }
 
+    public function testNativeBetweenNumericMatchesPhpRule(): void
+    {
+        $phpRule = Validator::getGlobalRuleRegistry()->get('between_numeric');
+        $this->assertNotNull($phpRule);
+        $native = PhalconValidationAdapter::build(['n' => 'between_numeric,18;65']);
+
+        foreach (['17', '18', '40', '65', '65.5', -1] as $value) {
+            $expected = $phpRule->validate('n', $value, ['18', '65'], []);
+            $this->assertSame($expected, count($native->validate(['n' => $value])) === 0, 'Value ' . $value);
+        }
+    }
+
     public function testMimeTypeUsesRealContentOfPhalconRequestFile(): void
     {
         $tmpFile = (string) tempnam(sys_get_temp_dir(), 'pv_test_');

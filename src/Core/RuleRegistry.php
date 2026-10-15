@@ -33,6 +33,7 @@ use PhalconValidation\Rules\Numeric\FloatRule;
 use PhalconValidation\Rules\Numeric\BooleanRule;
 use PhalconValidation\Rules\Numeric\MinNumericRule;
 use PhalconValidation\Rules\Numeric\MaxNumericRule;
+use PhalconValidation\Rules\Numeric\BetweenNumericRule;
 use PhalconValidation\Rules\Numeric\EvenRule;
 use PhalconValidation\Rules\Numeric\OddRule;
 use PhalconValidation\Rules\Numeric\PrimeRule;
@@ -145,13 +146,14 @@ class RuleRegistry implements RuleRegistryInterface
         $this->register(new SnakeCaseRule());
         $this->register(new UrlSlugRule());
 
-        // 4. Numeric (10)
+        // 4. Numeric (11)
         $this->register(new NumericRule());
         $this->register(new IntegerRule());
         $this->register(new FloatRule());
         $this->register(new BooleanRule());
         $this->register(new MinNumericRule());
         $this->register(new MaxNumericRule());
+        $this->register(new BetweenNumericRule());
         $this->register(new EvenRule());
         $this->register(new OddRule());
         $this->register(new PrimeRule());
@@ -222,7 +224,7 @@ class RuleRegistry implements RuleRegistryInterface
         $this->register(new ValidArraySizeGreaterRule());
         $this->register(new ValidArraySizeLesserRule());
 
-        // 13. Files (1)
+        // 13. Files (5 names, incl. mime_type alias)
         $this->register(new ExtensionRule());
         $this->register(new MimeTypeRule('mimetype'));
         $this->register(new MimeTypeRule('mime_type'));

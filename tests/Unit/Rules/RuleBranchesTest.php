@@ -32,7 +32,7 @@ class RuleBranchesTest extends TestCase
             'prime one' => ['prime', 1, [], false],
             'hash unknown algorithm hex' => ['hash', 'abcdef', ['crc32x'], true],
             'hash unknown algorithm non-hex' => ['hash', 'xyz', ['crc32x'], false],
-            'date without format' => ['date', '2024-02-30 10:00', [], true],
+            'date without format rejects overflowing day' => ['date', '2024-02-30 10:00', [], false],
             'future_date unparsable' => ['future_date', 'nope', [], false],
             'past_date unparsable' => ['past_date', 'nope', [], false],
             'business_day unparsable' => ['business_day', 'nope', [], false],

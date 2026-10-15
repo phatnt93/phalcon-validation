@@ -25,6 +25,7 @@ return [
     'boolean' => 'Trường {field} phải là giá trị logic (boolean).',
     'min_numeric' => 'Trường {field} phải có giá trị lớn hơn hoặc bằng {param:0}.',
     'max_numeric' => 'Trường {field} phải có giá trị nhỏ hơn hoặc bằng {param:0}.',
+    'between_numeric' => 'Trường {field} phải là số nằm trong khoảng từ {param:0} đến {param:1}.',
     'even' => 'Trường {field} phải là một số chẵn.',
     'odd' => 'Trường {field} phải là một số lẻ.',
     'prime' => 'Trường {field} phải là một số nguyên tố.',

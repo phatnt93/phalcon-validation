@@ -113,13 +113,13 @@ $cleanData = PhalconValidation::run($data, $rules);
 ```php
 $rules = [
     // Unique in database Users table:
-    'username' => 'required|unique:App\Models\Users,username',
+    'username' => 'required|unique,App\Models\Users,username',
     
     // Ignore current row ID 15 when updating:
-    'email'    => 'required|valid_email|unique:App\Models\Users,email,id,15',
+    'email'    => 'required|valid_email|unique,App\Models\Users,email,id,15',
     
     // Foreign key check:
-    'category_id' => 'required|exists:App\Models\Categories,id',
+    'category_id' => 'required|exists,App\Models\Categories,id',
 ];
 ```
 
@@ -153,11 +153,11 @@ $messages = $nativeValidation->validate($data);
 - **Numeric:** `numeric`, `integer`, `float`, `boolean`, `min_numeric,n`, `max_numeric,n`, `between_numeric,min;max`, `even`, `odd`, `prime`, `starts,prefix`
 - **Comparison:** `equalsfield,otherField`
 - **Regex:** `regex,/pattern/`
-- **Network:** `valid_email`, `valid_url`, `url_exists`, `valid_ip`, `valid_ipv4`, `valid_ipv6`, `mac_address`, `domain_name`, `port_number`, `social_handle`, `valid_name`
+- **Network:** `valid_email`, `valid_url`, `url_exists,[allow_private]`, `valid_ip`, `valid_ipv4`, `valid_ipv6`, `mac_address`, `domain_name`, `port_number`, `social_handle`, `valid_name`
 - **DateTime:** `date,[format]`, `date_range,start;end`, `past_date`, `future_date`, `business_day`, `valid_time`, `min_age,n`
 - **Geo:** `latitude`, `longitude`, `coordinates`, `postal_code`, `street_address`
 - **ISO:** `country_code`, `currency_code`, `language_code`, `timezone`
 - **Security:** `valid_cc`, `iban`, `uuid`, `guidv4`, `jwt_token`, `hash,algorithm`, `base64`, `strong_password`, `nosqlinjection`, `noxss`, `phone_number`
 - **Content:** `contains,val`, `contains_list,a;b`, `doesnt_contain_list,a;b`, `valid_json_string`, `valid_array_size_equal,n`, `valid_array_size_greater,n`, `valid_array_size_lesser,n`
 - **Files:** `extension,ext1;ext2`, `mimetype,type1;type2` (alias: `mime_type`), `max_file_size,limit`, `min_file_size,limit`
-- **Phalcon ORM:** `unique:Model,column,[ignoreCol],[ignoreVal]`, `exists:Model,column`
+- **Phalcon ORM:** `unique,Model,column,[ignoreCol],[ignoreVal]`, `exists,Model,column`

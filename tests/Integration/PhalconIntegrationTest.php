@@ -119,4 +119,24 @@ class PhalconIntegrationTest extends TestCase
         $this->assertFalse($uniqueRule->validate('email', 'existing@example.com', [MockUser::class, 'email'], []));
         $this->assertTrue($existsRule->validate('email', 'existing@example.com', [MockUser::class, 'email'], []));
     }
+
+    /**
+     * The documented string syntax (`unique,Model,column,...` / `exists,Model,column`) must work end to end.
+     */
+    public function testOrmRulesThroughRuleStrings(): void
+    {
+        $model = MockUser::class;
+
+        MockUser::$mockCount = 0;
+        $this->assertTrue(Validator::is_valid(
+            ['username' => 'alice', 'email' => 'a@example.com'],
+            ['username' => 'required|unique,' . $model . ',username', 'email' => 'required|unique,' . $model . ',email,id,15'],
+        ));
+        $this->assertSame(['conditions' => 'email = :val: AND id != :ignoreVal:', 'bind' => ['val' => 'a@example.com', 'ignoreVal' => '15']], MockUser::$lastParams);
+        $this->assertIsArray(Validator::is_valid(['category_id' => 7], ['category_id' => 'required|exists,' . $model . ',id']));
+
+        MockUser::$mockCount = 1;
+        $this->assertIsArray(Validator::is_valid(['username' => 'alice'], ['username' => 'unique,' . $model . ',username']));
+        $this->assertTrue(Validator::is_valid(['category_id' => 7], ['category_id' => 'exists,' . $model . ',id']));
+    }
 }

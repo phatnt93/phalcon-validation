@@ -11,11 +11,15 @@ final class MockUser
 {
     public static int $mockCount = 0;
 
+    /** @var array<mixed> Parameters passed to the last count() call. */
+    public static array $lastParams = [];
+
     /**
      * @param array<mixed> $params
      */
     public static function count(array $params = []): int
     {
+        self::$lastParams = $params;
         return self::$mockCount;
     }
 }
