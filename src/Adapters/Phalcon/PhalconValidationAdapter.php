@@ -84,12 +84,15 @@ class PhalconValidationAdapter
             'required' => new PresenceOf(),
             'valid_email' => new Email(),
             'valid_url' => new Url(),
+            // Match the pure-PHP rules (FILTER_VALIDATE_IP without range flags): private and reserved ranges are valid
             'valid_ip', 'valid_ipv4', 'valid_ipv6' => new Ip([
                 'version' => match ($name) {
-                    'valid_ipv4' => 4,
-                    'valid_ipv6' => 6,
-                    default => null,
+                    'valid_ipv4' => Ip::VERSION_4,
+                    'valid_ipv6' => Ip::VERSION_6,
+                    default => Ip::VERSION_4 | Ip::VERSION_6,
                 },
+                'allowPrivate' => true,
+                'allowReserved' => true,
             ]),
             'min_len' => new StringLength([
                 'min' => (int) ($params[0] ?? 0),
