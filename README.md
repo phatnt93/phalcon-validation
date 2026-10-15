@@ -595,7 +595,7 @@ Every file validator automatically detects and validates:
 
 ### 11.13. File Uploads
 - **`extension,ext1;ext2`**: Allowed file extensions (`pdf;docx;png`). Intelligently validates single files, native PHP `$_FILES` multiple arrays, normalized file lists, filename strings, and Phalcon File objects.
-- **`mimetype,type1;type2`**: Allowed MIME types (`image/png;image/jpeg;application/pdf`). Inspects real binary content via `finfo` when file exists on disk, with graceful fallback to header metadata (alias: `mime_type`).
+- **`mimetype,type1;type2`**: Allowed MIME types (`image/png;image/jpeg;application/pdf`). Inspects real binary content via `finfo` (or `Phalcon\Http\Request\File::getRealType()`). The client-provided `type` is never trusted: a file that is not available on disk fails (alias: `mime_type`).
 - **`max_file_size,limit`**: Maximum allowed file size (supports units like `2mb`, `500kb`, `1048576`).
 - **`min_file_size,limit`**: Minimum allowed file size (supports units like `10kb`, `1024`).
 

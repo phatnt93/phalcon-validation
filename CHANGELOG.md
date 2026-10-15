@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Phalcon adapter: `valid_ip`, `valid_ipv4` and `valid_ipv6` now match the pure-PHP rules. The native `Ip` validator received `4`/`6` instead of `Ip::VERSION_4`/`Ip::VERSION_6`, so `valid_ipv4` accepted IPv6 addresses (and vice versa), and private/reserved addresses (e.g. `10.0.0.1`, `127.0.0.1`) were rejected.
 
 ### Security
+- **Behaviour change:** `mimetype` / `mime_type` no longer trusts the client-provided Content-Type (`type` key or `getType()`). The MIME type is always detected from the real file content on disk (`finfo`) or `Phalcon\Http\Request\File::getRealType()`. Files whose temp file is missing now fail instead of falling back to the spoofable client type. Native `$_FILES` multiple uploads are iterated by `tmp_name`.
 - Malformed locale codes (e.g. `../../etc/passwd`) now throw `InvalidLocaleException`, and only shipped locales are loaded from disk. Previously the locale string was concatenated into a `require` path.
 
 ## [1.1.0] - 2026-10-15

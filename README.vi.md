@@ -596,7 +596,7 @@ Mọi rule kiểm tra tệp tin đều tự động phân tích và tương thí
 
 ### 11.13. Nhóm Tệp tin Tải lên
 - **`extension,ext1;ext2`**: Phần mở rộng tệp tin hợp lệ (`pdf;docx;png`). Tự động nhận diện linh hoạt chuỗi tên file, file đơn, mảng native PHP `$_FILES`, danh sách mảng file đã chuẩn hóa và đối tượng Phalcon File.
-- **`mimetype,type1;type2`**: Định dạng MIME type hợp lệ (`image/png;image/jpeg;application/pdf`). Kiểm tra cấu trúc nhị phân thực tế qua `finfo` khi tệp tồn tại trên đĩa, tự động fallback về header metadata (alias: `mime_type`).
+- **`mimetype,type1;type2`**: Định dạng MIME type hợp lệ (`image/png;image/jpeg;application/pdf`). Kiểm tra cấu trúc nhị phân thực tế qua `finfo` (hoặc `Phalcon\Http\Request\File::getRealType()`). Không bao giờ tin `type` do client gửi: tệp không tồn tại trên đĩa sẽ bị từ chối (alias: `mime_type`).
 - **`max_file_size,limit`**: Dung lượng tệp tin tối đa cho phép (hỗ trợ các đơn vị `2mb`, `500kb`, `1048576`).
 - **`min_file_size,limit`**: Dung lượng tệp tin tối thiểu cho phép (hỗ trợ các đơn vị `10kb`, `1024`).
 

@@ -220,27 +220,29 @@ class FileUploadValidationTest extends TestCase
         $this->assertArrayHasKey('gallery.1', $errorsArray);
     }
 
-    public function testMimeTypeWithSingleFileAndMetadata(): void
+    public function testMimeTypeIgnoresClientProvidedType(): void
     {
         $rules = ['avatar' => 'mimetype,image/png;image/jpeg'];
 
-        $valid = [
+        // No file on disk: the client-provided type cannot be verified and is never trusted
+        $spoofed = [
             'avatar' => [
                 'name' => 'avatar.png',
                 'type' => 'image/png',
                 'error' => 0,
             ],
         ];
-        $this->assertTrue(Validator::is_valid($valid, $rules));
+        $this->assertIsArray(Validator::is_valid($spoofed, $rules));
 
-        $invalid = [
-            'avatar' => [
-                'name' => 'avatar.png',
-                'type' => 'application/x-php',
-                'error' => 0,
-            ],
-        ];
-        $this->assertIsArray(Validator::is_valid($invalid, $rules));
+        // A PHP script uploaded with a forged image/png Content-Type is detected by its real content
+        $tmpFile = (string) tempnam(sys_get_temp_dir(), 'pv_test_');
+        file_put_contents($tmpFile, "<?php echo 'pwned';\n");
+        try {
+            $spoofed['avatar']['tmp_name'] = $tmpFile;
+            $this->assertIsArray(Validator::is_valid($spoofed, $rules));
+        } finally {
+            @unlink($tmpFile);
+        }
     }
 
     public function testMimeTypeWithRealFileOnDisk(): void
@@ -274,32 +276,51 @@ class FileUploadValidationTest extends TestCase
     {
         $rules = ['docs' => 'mime_type,application/pdf;image/png'];
 
-        // 1. Multiple native PHP
-        $validNative = [
-            'docs' => [
-                'name' => ['a.pdf', 'b.png'],
-                'type' => ['application/pdf', 'image/png'],
-                'error' => [0, 0],
-            ],
-        ];
-        $this->assertTrue(Validator::is_valid($validNative, $rules));
+        $pdf = (string) tempnam(sys_get_temp_dir(), 'pv_test_');
+        $png = (string) tempnam(sys_get_temp_dir(), 'pv_test_');
+        $text = (string) tempnam(sys_get_temp_dir(), 'pv_test_');
+        file_put_contents($pdf, "%PDF-1.4\n%\xe2\xe3\xcf\xd3\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF\n");
+        file_put_contents($png, "\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89");
+        file_put_contents($text, 'plain text');
 
-        // 2. Normalized array
-        $validNormalized = [
-            'docs' => [
-                ['name' => 'a.pdf', 'type' => 'application/pdf'],
-                ['name' => 'b.png', 'type' => 'image/png'],
-            ],
-        ];
-        $this->assertTrue(Validator::is_valid($validNormalized, $rules));
+        try {
+            // 1. Multiple native PHP
+            $validNative = [
+                'docs' => [
+                    'name' => ['a.pdf', 'b.png'],
+                    'type' => ['application/octet-stream', 'application/octet-stream'],
+                    'tmp_name' => [$pdf, $png],
+                    'error' => [0, 0],
+                ],
+            ];
+            $this->assertTrue(Validator::is_valid($validNative, $rules));
 
-        $invalidNormalized = [
-            'docs' => [
-                ['name' => 'a.pdf', 'type' => 'application/pdf'],
-                ['name' => 'evil.exe', 'type' => 'application/x-dosexec'],
-            ],
-        ];
-        $this->assertIsArray(Validator::is_valid($invalidNormalized, $rules));
+            $invalidNative = $validNative;
+            $invalidNative['docs']['tmp_name'][1] = $text;
+            $invalidNative['docs']['type'][1] = 'image/png';
+            $this->assertIsArray(Validator::is_valid($invalidNative, $rules));
+
+            // 2. Normalized array
+            $validNormalized = [
+                'docs' => [
+                    ['name' => 'a.pdf', 'tmp_name' => $pdf],
+                    ['name' => 'b.png', 'tmp_name' => $png],
+                ],
+            ];
+            $this->assertTrue(Validator::is_valid($validNormalized, $rules));
+
+            $invalidNormalized = [
+                'docs' => [
+                    ['name' => 'a.pdf', 'tmp_name' => $pdf],
+                    ['name' => 'evil.png', 'type' => 'image/png', 'tmp_name' => $text],
+                ],
+            ];
+            $this->assertIsArray(Validator::is_valid($invalidNormalized, $rules));
+        } finally {
+            @unlink($pdf);
+            @unlink($png);
+            @unlink($text);
+        }
     }
 
     public function testMaxFileSizeAndMinFileSize(): void

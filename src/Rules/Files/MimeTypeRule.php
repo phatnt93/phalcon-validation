@@ -8,8 +8,9 @@ use PhalconValidation\Rules\AbstractRule;
 
 /**
  * Validates that uploaded file has an allowed MIME type (e.g. image/png, application/pdf).
- * Inspects real file content on disk via finfo_file when physical temp file exists,
- * with graceful fallback to request Content-Type header or Phalcon File object.
+ * The MIME type is always detected from the real file content on disk (finfo), or from
+ * Phalcon File::getRealType(). The client-provided Content-Type ('type' key / getType())
+ * is never trusted, so a file that is not available on disk fails validation.
  */
 class MimeTypeRule extends AbstractRule
 {
@@ -75,20 +76,13 @@ class MimeTypeRule extends AbstractRule
         }
 
         // 4. PHP Native $_FILES multiple upload structure (e.g. ['tmp_name' => [...], 'type' => [...]])
-        if (isset($value['type']) && is_array($value['type'])) {
-            if (empty($value['type'])) {
+        if (isset($value['tmp_name']) && is_array($value['tmp_name'])) {
+            if (empty($value['tmp_name'])) {
                 return false;
             }
 
-            $count = count($value['type']);
-            for ($i = 0; $i < $count; $i++) {
-                $fileItem = [
-                    'tmp_name' => $value['tmp_name'][$i] ?? '',
-                    'type' => $value['type'][$i] ?? '',
-                    'name' => $value['name'][$i] ?? '',
-                    'error' => $value['error'][$i] ?? 0,
-                ];
-                if (!$checkFile($fileItem)) {
+            foreach ($value['tmp_name'] as $tmpName) {
+                if (!$checkFile(['tmp_name' => $tmpName])) {
                     return false;
                 }
             }
@@ -96,7 +90,7 @@ class MimeTypeRule extends AbstractRule
             return true;
         }
 
-        // 5. PHP Native $_FILES single upload structure
+        // 5. PHP Native $_FILES single upload structure (a 'type' without 'tmp_name' cannot be verified)
         if (isset($value['tmp_name']) || isset($value['type'])) {
             return $checkFile($value);
         }
@@ -105,55 +99,34 @@ class MimeTypeRule extends AbstractRule
     }
 
     /**
-     * Detect MIME type from physical file (via finfo) or metadata.
+     * Detect MIME type from the physical file (via finfo) or Phalcon's content-based real type.
      */
     private function detectMimeType(mixed $file): ?string
     {
-        // Case: Phalcon Http Request FileInterface
+        // Case: Phalcon Http Request FileInterface (getRealType() inspects the temp file content)
         if (is_object($file)) {
+            $tmpName = method_exists($file, 'getTempName') ? (string) $file->getTempName() : null;
+            // getRealType() warns when the temp file is missing, so verify it exists first
+            if ($tmpName !== null && ($tmpName === '' || !is_file($tmpName))) {
+                return null;
+            }
             if (method_exists($file, 'getRealType')) {
                 $type = (string) $file->getRealType();
                 if ($type !== '') {
                     return $type;
                 }
             }
-            if (method_exists($file, 'getTempName')) {
-                $tmp = (string) $file->getTempName();
-                if ($tmp !== '' && is_file($tmp)) {
-                    $real = $this->detectFromFilePath($tmp);
-                    if ($real !== null) {
-                        return $real;
-                    }
-                }
-            }
-            if (method_exists($file, 'getType')) {
-                return (string) $file->getType();
-            }
-            return null;
+            return $tmpName !== null ? $this->detectFromFilePath($tmpName) : null;
         }
 
         // Case: String path
         if (is_string($file)) {
-            if (is_file($file)) {
-                return $this->detectFromFilePath($file);
-            }
-            return null;
+            return $this->detectFromFilePath($file);
         }
 
-        // Case: Array with tmp_name and/or type
-        if (is_array($file)) {
-            $tmpName = (string) ($file['tmp_name'] ?? '');
-            if ($tmpName !== '' && is_file($tmpName)) {
-                $real = $this->detectFromFilePath($tmpName);
-                if ($real !== null) {
-                    return $real;
-                }
-            }
-
-            // Fallback to client-provided type header
-            if (isset($file['type']) && is_string($file['type']) && trim($file['type']) !== '') {
-                return trim($file['type']);
-            }
+        // Case: Array with tmp_name
+        if (is_array($file) && isset($file['tmp_name']) && is_string($file['tmp_name'])) {
+            return $this->detectFromFilePath($file['tmp_name']);
         }
 
         return null;
@@ -161,6 +134,10 @@ class MimeTypeRule extends AbstractRule
 
     private function detectFromFilePath(string $path): ?string
     {
+        if ($path === '' || !is_file($path)) {
+            return null;
+        }
+
         if (function_exists('finfo_open')) {
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             if ($finfo !== false) {
